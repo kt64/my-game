@@ -32,15 +32,26 @@
 <div id="game" style="display:none">
   <div id="main">
     <div id="map-container">
-      <svg id="japan-map" viewBox="0 0 1000 1000" width="400">
-        <!-- 簡易版：都道府県パスを配置 -->
-        <!-- 本番用は47都道府県分追加 -->
-        <path id="hokkaido" d="M400,50 L420,50 L420,70 L400,70 Z" fill="#ccc" stroke="#333" onclick="clickPref('hokkaido')"></path>
-        <path id="tokyo" d="M500,500 L520,500 L520,520 L500,520 Z" fill="#ccc" stroke="#333" onclick="clickPref('tokyo')"></path>
-        <path id="osaka" d="M480,540 L500,540 L500,560 L480,560 Z" fill="#ccc" stroke="#333" onclick="clickPref('osaka')"></path>
-        <path id="aichi" d="M490,520 L510,520 L510,540 L490,540 Z" fill="#ccc" stroke="#333" onclick="clickPref('aichi')"></path>
-        <path id="fukuoka" d="M420,600 L440,600 L440,620 L420,620 Z" fill="#ccc" stroke="#333" onclick="clickPref('fukuoka')"></path>
-        <!-- 他の都道府県も同様に追加 -->
+      <svg id="japan-map" viewBox="0 0 1000 1000" width="450">
+        <!-- 北海道地方 -->
+        <path id="hokkaido" d="M400,50 L450,50 L450,100 L400,100 Z" stroke="#333" onclick="clickPref('hokkaido')"></path>
+        <!-- 東北地方 -->
+        <path id="aomori" d="M400,110 L450,110 L450,160 L400,160 Z" stroke="#333" onclick="clickPref('aomori')"></path>
+        <path id="iwate" d="M460,110 L510,110 L510,160 L460,160 Z" stroke="#333" onclick="clickPref('iwate')"></path>
+        <path id="miyagi" d="M520,110 L570,110 L570,160 L520,160 Z" stroke="#333" onclick="clickPref('miyagi')"></path>
+        <path id="akita" d="M460,170 L510,170 L510,220 L460,220 Z" stroke="#333" onclick="clickPref('akita')"></path>
+        <path id="yamagata" d="M520,170 L570,170 L570,220 L520,220 Z" stroke="#333" onclick="clickPref('yamagata')"></path>
+        <path id="fukushima" d="M580,170 L630,170 L630,220 L580,220 Z" stroke="#333" onclick="clickPref('fukushima')"></path>
+        <!-- 関東地方 -->
+        <path id="ibaraki" d="M580,230 L630,230 L630,280 L580,280 Z" stroke="#333" onclick="clickPref('ibaraki')"></path>
+        <path id="tochigi" d="M520,230 L570,230 L570,280 L520,280 Z" stroke="#333" onclick="clickPref('tochigi')"></path>
+        <path id="gunma" d="M460,230 L510,230 L510,280 L460,280 Z" stroke="#333" onclick="clickPref('gunma')"></path>
+        <path id="saitama" d="M460,290 L510,290 L510,340 L460,340 Z" stroke="#333" onclick="clickPref('saitama')"></path>
+        <path id="chiba" d="M520,290 L570,290 L570,340 L520,340 Z" stroke="#333" onclick="clickPref('chiba')"></path>
+        <path id="tokyo" d="M520,350 L570,350 L570,400 L520,400 Z" stroke="#333" onclick="clickPref('tokyo')"></path>
+        <path id="kanagawa" d="M580,350 L630,350 L630,400 L580,400 Z" stroke="#333" onclick="clickPref('kanagawa')"></path>
+        <!-- 中部・近畿・中国・四国・九州省略（47都道府県同様配置） -->
+        <!-- ここに前回作った47都道府県のSVG pathをすべて追加 -->
       </svg>
     </div>
 
@@ -73,6 +84,24 @@
 </div>
 
 <script src="game.js"></script>
+<script>
+  // 初期勢力の色を設定
+  const prefFaction = {
+    hokkaido:"opposition", aomori:"opposition", iwate:"opposition", miyagi:"opposition",
+    akita:"opposition", yamagata:"opposition", fukushima:"opposition",
+    tokyo:"ruling", kanagawa:"ruling", saitama:"ruling", chiba:"ruling",
+    aichi:"ruling", osaka:"ruling", hyogo:"ruling", kyoto:"ruling",
+    fukuoka:"ruling", okinawa:"opposition"
+  };
+  const prefectures=["hokkaido","aomori","iwate","miyagi","akita","yamagata","fukushima","ibaraki","tochigi","gunma","saitama","chiba","tokyo","kanagawa","niigata","toyama","ishikawa","fukui","yamanashi","nagano","gifu","shizuoka","aichi","mie","shiga","kyoto","osaka","hyogo","nara","wakayama","tottori","shimane","okayama","hiroshima","yamaguchi","tokushima","kagawa","ehime","kochi","fukuoka","saga","nagasaki","kumamoto","oita","miyazaki","kagoshima","okinawa"];
+  prefectures.forEach(p=>{
+    let elem=document.getElementById(p);
+    if(!elem) return;
+    if(prefFaction[p]=="ruling") elem.setAttribute("fill","rgb(200,50,50)");
+    else if(prefFaction[p]=="opposition") elem.setAttribute("fill","rgb(50,50,200)");
+    else elem.setAttribute("fill","rgb(200,200,200)");
+  });
+</script>
 </body>
 </html>
 
