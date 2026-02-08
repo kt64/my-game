@@ -1,144 +1,86 @@
-let day = 1;
-let time = 0;
-let maxDays = 15;
+let turn = 0;
+let currentPlayer = "ruling";
+let speechMode = false;
 
-let support = { youth:0, middle:0, senior:0 };
-let partyName = "";
-let selectedPolicies = [];
-
-let prefSupport = {};
-let mapClickMode = false;
-
-// 初期勢力設定
-// 与党: red, 野党: blue, 中立: gray
-let prefFaction = {
-  hokkaido:"opposition", aomori:"opposition", iwate:"opposition", miyagi:"opposition",
-  akita:"opposition", yamagata:"opposition", fukushima:"opposition",
-  tokyo:"ruling", kanagawa:"ruling", saitama:"ruling", chiba:"ruling",
-  aichi:"ruling", osaka:"ruling", hyogo:"ruling", kyoto:"ruling",
-  fukuoka:"ruling", okinawa:"opposition"
+let seats = {
+  ruling: 200,
+  opposition: 265
 };
-const prefectures=[
-  "hokkaido","aomori","iwate","miyagi","akita","yamagata","fukushima",
-  "ibaraki","tochigi","gunma","saitama","chiba","tokyo","kanagawa",
-  "niigata","toyama","ishikawa","fukui","yamanashi","nagano","gifu",
-  "shizuoka","aichi","mie","shiga","kyoto","osaka","hyogo","nara","wakayama",
-  "tottori","shimane","okayama","hiroshima","yamaguchi",
-  "tokushima","kagawa","ehime","kochi",
-  "fukuoka","saga","nagasaki","kumamoto","oita","miyazaki","kagoshima","okinawa"
-];
-prefectures.forEach(p=>prefSupport[p]=0);
 
-// 初期色設定
-function initMapColor(){
-  prefectures.forEach(p=>{
-    let elem=document.getElementById(p);
-    if(!elem) return;
-    if(prefFaction[p]==="ruling") elem.setAttribute("fill","rgb(200,50,50)");
-    else if(prefFaction[p]==="opposition") elem.setAttribute("fill","rgb(50,50,200)");
-    else elem.setAttribute("fill","rgb(200,200,200)");
-  });
-}
+// 都道府県の勢力（正：与党／負：野党）
+let power = {};
+document.querySelectorAll("svg path").forEach(p => power[p.id] = 0);
 
-// スタート
-function startGame(){
-  partyName = document.getElementById("partyName").value;
-  const checks = document.querySelectorAll("#policies input:checked");
-  if(partyName=="" || checks.length!=5){ alert("政党名を入力して公約を5つ選んでください"); return; }
-  selectedPolicies=[]; support={youth:0,middle:0,senior:0};
-  checks.forEach(c=>{
-    selectedPolicies.push(c.value);
-    let e=policyEffects[c.value];
-    support.youth+=e.youth; support.middle+=e.middle; support.senior+=e.senior;
-  });
-  document.getElementById("setup").style.display="none";
-  document.getElementById("game").style.display="block";
-  initMapColor();
-  updateStatus(); updateNews(); updateSeats();
-}
-
-// 街頭演説ボタン
-function action(type){
-  if(type==="speech"){
-    mapClickMode=true;
-    alert("演説する都道府県を地図から選んでください");
-  } else {
-    applyAction(type);
-  }
+// 街頭演説
+function startSpeech() {
+  speechMode = true;
+  document.getElementById("news").textContent =
+    (currentPlayer === "ruling")
+      ? "与党が街頭演説を開始"
+      : "野党が街頭演説を開始";
 }
 
 // 地図クリック
-function clickPref(pref){
-  if(!mapClickMode) return;
-  prefSupport[pref]++;
-  let elem=document.getElementById(pref);
-  let level=Math.min(prefSupport[pref],5);
-  // 与党:赤濃淡, 野党:青濃淡
-  if(prefFaction[p]==="ruling") elem.setAttribute("fill",`rgb(${200-level*30},${50},${50})`);
-  else if(prefFaction[p]==="opposition") elem.setAttribute("fill",`rgb(${50},${50},${200-level*30})`);
-  else elem.setAttribute("fill",`rgb(${200-level*30},${200-level*30},${200-level*30})`);
-  mapClickMode=false;
-  applyAction('speech', pref);
+document.querySelectorAll("svg path").forEach(path => {
+  path.addEventListener("click", () => {
+    if (!speechMode) return;
+
+    const id = path.id;
+
+    if (currentPlayer === "ruling") {
+      power[id]++;
+      seats.ruling++;
+      seats.opposition--;
+      path.style.fill = getRulingColor(power[id]);
+    } else {
+      power[id]--;
+      seats.opposition++;
+      seats.ruling--;
+      path.style.fill = getOppositionColor(power[id]);
+    }
+
+    speechMode = false;
+    turn++;
+    generateNews();
+    switchPlayer();
+    updateUI();
+  });
+});
+
+// 色（色覚多様性）
+function getRulingColor(v) {
+  return `rgb(${230},${160 - v*10},0)`; // オレンジ系
 }
 
-// 効果反映
-function applyAction(type,pref=null){
-  let e=actionEffects[type];
-  support.youth+=e.youth; support.middle+=e.middle; support.senior+=e.senior;
-
-  if(type==="speech" && pref){
-    let regionEffect = prefSupport[pref]*2;
-    support.youth+=regionEffect; support.middle+=regionEffect; support.senior+=regionEffect;
-  }
-
-  time++; if(time===3){ time=0; day++; }
-
-  updateStatus(); updateSeats(); updateNews();
-
-  if(day>maxDays) finish();
+function getOppositionColor(v) {
+  return `rgb(0,${140 - Math.abs(v)*10},178)`; // 青緑系
 }
 
-// 状態更新
-function updateStatus(){
-  document.getElementById("status").textContent=`${day}日目 ${["朝","昼","夜"][time]} ／ ${partyName}`;
-  document.getElementById("youth").textContent=support.youth;
-  document.getElementById("middle").textContent=support.middle;
-  document.getElementById("senior").textContent=support.senior;
+// ニュース
+function generateNews() {
+  let phase = turn < 15 ? "序盤" : turn < 30 ? "中盤" : "終盤";
+  let diff = seats.ruling - seats.opposition;
+  let trend =
+    diff > 20 ? "与党優勢" :
+    diff < -20 ? "野党優勢" : "接戦";
+
+  document.getElementById("news").textContent =
+    `【${phase}情勢】${trend}`;
 }
 
-// 議席予測
-function updateSeats(){
-  let total=support.youth+support.middle+support.senior;
-  total+=Object.values(prefSupport).reduce((a,b)=>a+b,0)*2;
-  let voteRate=Math.max(30,Math.min(70,50+total/20));
-  let seats=Math.round(Math.pow(voteRate/100,1.3)*465);
-  document.getElementById("seatsText").textContent=`予測議席：${seats}議席（過半数233）`;
+// 手番交代
+function switchPlayer() {
+  currentPlayer = currentPlayer === "ruling" ? "opposition" : "ruling";
+  document.getElementById("player").textContent =
+    currentPlayer === "ruling" ? "与党" : "野党";
 }
 
-// ニュース速報
-function updateNews(){
-  let message="";
-  if(day<=5) message="序盤情勢調査：与党がやや優勢です。";
-  else if(day<=10) message="中盤情勢調査：支持率に変動があります。";
-  else message="終盤情勢調査：接戦模様です。";
-  document.getElementById("newsText").textContent=message;
-}
+// 表示更新
+function updateUI() {
+  document.getElementById("turn").textContent =
+    `ターン：${turn} / 45`;
 
-// 最終結果
-function finish(){
-  document.getElementById("game").style.display="none";
-  document.getElementById("result").style.display="block";
-  let total=support.youth+support.middle+support.senior;
-  total+=Object.values(prefSupport).reduce((a,b)=>a+b,0)*2;
-  let voteRate=Math.max(30,Math.min(70,50+total/20));
-  let seats=Math.round(Math.pow(voteRate/100,1.3)*465);
-  document.getElementById("resultText").innerHTML=
-    `政党名：${partyName}<br>
-     得票率：約${voteRate.toFixed(1)}％<br>
-     獲得議席数：${seats}議席<br>
-     ${seats>=233 ? "→ 与党" : "→ 野党"}`;
+  document.getElementById("seats").textContent =
+    `与党${seats.ruling}｜野党${seats.opposition}（過半数233）`;
 }
-
-// 初期色設定を読み込み
-initMapColor();
 
