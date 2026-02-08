@@ -1,86 +1,63 @@
+const policyList = ['社会保障','経済','エネルギー','農業','外交','教育','政治とカネ'];
+let selectedPref = null;
 let turn = 0;
-let currentPlayer = "ruling";
-let speechMode = false;
 
-let seats = {
-  ruling: 200,
-  opposition: 265
-};
 
-// 都道府県の勢力（正：与党／負：野党）
-let power = {};
-document.querySelectorAll("svg path").forEach(p => power[p.id] = 0);
+const svg = document.getElementById('japanMap');
 
-// 街頭演説
-function startSpeech() {
-  speechMode = true;
-  document.getElementById("news").textContent =
-    (currentPlayer === "ruling")
-      ? "与党が街頭演説を開始"
-      : "野党が街頭演説を開始";
-}
 
-// 地図クリック
-document.querySelectorAll("svg path").forEach(path => {
-  path.addEventListener("click", () => {
-    if (!speechMode) return;
-
-    const id = path.id;
-
-    if (currentPlayer === "ruling") {
-      power[id]++;
-      seats.ruling++;
-      seats.opposition--;
-      path.style.fill = getRulingColor(power[id]);
-    } else {
-      power[id]--;
-      seats.opposition++;
-      seats.ruling--;
-      path.style.fill = getOppositionColor(power[id]);
-    }
-
-    speechMode = false;
-    turn++;
-    generateNews();
-    switchPlayer();
-    updateUI();
-  });
+prefectures.forEach(p => {
+const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+r.setAttribute('x',p[1]);
+r.setAttribute('y',p[2]);
+r.setAttribute('width',18);
+r.setAttribute('height',18);
+r.classList.add('pref','yato');
+r.dataset.name = p[0];
+r.addEventListener('click',()=>selectPref(r));
+svg.appendChild(r);
 });
 
-// 色（色覚多様性）
-function getRulingColor(v) {
-  return `rgb(${230},${160 - v*10},0)`; // オレンジ系
+
+function selectPref(el){
+document.querySelectorAll('.pref').forEach(p=>p.classList.remove('selected'));
+el.classList.add('selected');
+selectedPref = el;
 }
 
-function getOppositionColor(v) {
-  return `rgb(0,${140 - Math.abs(v)*10},178)`; // 青緑系
+
+startBtn.onclick = () => {
+const checked = document.querySelectorAll('#policies input:checked');
+if(checked.length !== 5){ alert('公約は5つ選んでください'); return; }
+document.getElementById('setup').classList.add('hidden');
+document.getElementById('game').classList.remove('hidden');
+updateUI();
+};
+
+
+function doAction(type){
+if(!selectedPref){ alert('都道府県を選択してください'); return; }
+turn++;
+seats += type==='speech'?1:type==='sns'?2:3;
+selectedPref.classList.remove('yato');
+selectedPref.classList.add('yoto');
+selectedPref.classList.remove('selected');
+selectedPref = null;
+updateUI(type);
 }
 
-// ニュース
-function generateNews() {
-  let phase = turn < 15 ? "序盤" : turn < 30 ? "中盤" : "終盤";
-  let diff = seats.ruling - seats.opposition;
-  let trend =
-    diff > 20 ? "与党優勢" :
-    diff < -20 ? "野党優勢" : "接戦";
 
-  document.getElementById("news").textContent =
-    `【${phase}情勢】${trend}`;
+function updateUI(type){
+document.getElementById('seats').textContent = `与党議席：${seats} / 465（過半数233）`;
+document.getElementById('seatBar').style.width = `${(seats/465)*100}%`;
+
+
+if(turn===3||turn===6||turn===9){
+document.getElementById('news').textContent = seats>=233
+? '情勢調査：与党が優勢、過半数の可能性'
+: '情勢調査：与党は苦戦';
+} else if(type){
+document.getElementById('news').textContent = `${type}を実施`;
 }
-
-// 手番交代
-function switchPlayer() {
-  currentPlayer = currentPlayer === "ruling" ? "opposition" : "ruling";
-  document.getElementById("player").textContent =
-    currentPlayer === "ruling" ? "与党" : "野党";
-}
-
-// 表示更新
-function updateUI() {
-  document.getElementById("turn").textContent =
-    `ターン：${turn} / 45`;
-
-  document.getElementById("seats").textContent =
-    `与党${seats.ruling}｜野党${seats.opposition}（過半数233）`;
 }
 
