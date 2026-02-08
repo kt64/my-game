@@ -1,49 +1,53 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>衆院選シミュレーション</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>衆議院選挙シミュレーション</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <h1>衆議院選挙シミュレーション</h1>
 
-
 <section id="setup">
-<h2>初期設定</h2>
-<label>政党名：<input id="partyName"></label>
-<h3>公約（5つ選択）</h3>
-<div id="policies"></div>
-<button id="startBtn">ゲーム開始</button>
-</section>
+  <h2>初期設定</h2>
 
+  <label>
+    政党名：
+    <input type="text" id="partyName">
+  </label>
+
+  <h3>公約（5つ選択）</h3>
+  <div id="policies"></div>
+
+  <button id="startBtn">ゲーム開始</button>
+</section>
 
 <section id="game" class="hidden">
-<div class="left">
-<h3>日本地図（SVG）</h3>
-<svg id="japanMap" viewBox="0 0 800 400"></svg>
-</div>
+  <div class="left">
+    <h3>日本地図</h3>
+    <svg id="japanMap" viewBox="0 0 800 450"></svg>
+  </div>
 
+  <div class="right">
+    <h3>行動</h3>
+    <button id="speechBtn">街頭演説</button>
+    <button id="snsBtn">SNS発信</button>
+    <button id="debateBtn">討論会</button>
 
-<div class="right">
-<h3>行動</h3>
-<button onclick="doAction('speech')">街頭演説</button>
-<button onclick="doAction('sns')">SNS発信</button>
-<button onclick="doAction('debate')">討論会</button>
+    <h3>ニュース速報</h3>
+    <div id="news">---</div>
 
-
-<h3>ニュース速報</h3>
-<div id="news">---</div>
-
-
-<h3>議席予測</h3>
-<div id="seats"></div>
-<div class="bar"><div id="seatBar"></div></div>
-</div>
+    <h3>議席予測</h3>
+    <div id="seats"></div>
+    <div class="bar">
+      <div id="seatBar"></div>
+    </div>
+  </div>
 </section>
-
 
 <script src="game.js"></script>
 </body>
 </html>
+
 
