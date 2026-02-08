@@ -1,1 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>衆院選シミュレーションゲーム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>衆院選シミュレーションゲーム</h1>
+
+<div id="setup">
+  <h2>政党名を入力して公約を5つ選んでね</h2>
+  <input type="text" id="partyName" placeholder="政党名">
+
+  <div id="policies">
+    <label><input type="checkbox" value="tax"> 税制改革</label>
+    <label><input type="checkbox" value="wage"> 賃金政策</label>
+    <label><input type="checkbox" value="child"> 子育て支援</label>
+    <label><input type="checkbox" value="pension"> 年金改革</label>
+    <label><input type="checkbox" value="defense"> 防衛</label>
+    <label><input type="checkbox" value="peace"> 平和外交</label>
+    <label><input type="checkbox" value="edu"> 教育改革</label>
+    <label><input type="checkbox" value="reform"> 政治改革</label>
+  </div>
+
+  <button onclick="startGame()">ゲームスタート</button>
+</div>
+
+<div id="game" style="display:none">
+  <h2 id="status"></h2>
+  <button onclick="action('speech')">街頭演説</button>
+  <button onclick="action('sns')">SNS発信</button>
+  <button onclick="action('tv')">TV討論</button>
+  <button onclick="action('local')">地方訪問</button>
+
+  <div id="support">
+    <p>若者支持：<span id="youth">0</span></p>
+    <p>中間層支持：<span id="middle">0</span></p>
+    <p>高齢者支持：<span id="senior">0</span></p>
+  </div>
+</div>
+
+<div id="result" style="display:none">
+  <h2>選挙結果</h2>
+  <p id="resultText"></p>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
 
