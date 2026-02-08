@@ -1,27 +1,59 @@
-body { font-family: sans-serif; margin: 20px; }
-.hidden { display: none; }
-
-
-#game { display: flex; gap: 20px; }
-.left { width: 65%; }
-.right { width: 35%; }
-
-
-svg { width: 100%; border: 1px solid #ccc; }
-
-
-.pref {
-fill: #e0e0e0;
-stroke: #555;
-stroke-width: 1;
-cursor: pointer;
+body {
+  font-family: sans-serif;
+  margin: 20px;
 }
 
+.hidden {
+  display: none;
+}
 
-.pref.yoto { fill: #E69F00; }
-.pref.yato { fill: #0072B2; }
-.pref.selected { stroke-width: 3; }
+#game {
+  display: flex;
+  gap: 20px;
+}
 
+.left {
+  width: 65%;
+}
 
-.bar { width: 100%; height: 20px; background: #ddd; }
-#seatBar { height: 100%; background: #0072B2; width: 0%; }
+.right {
+  width: 35%;
+}
+
+svg {
+  width: 100%;
+  height: 420px;   /* ← 地図が表示されない最大原因を防止 */
+  border: 1px solid #ccc;
+}
+
+.pref {
+  fill: #e0e0e0;
+  stroke: #555;
+  stroke-width: 1;
+  cursor: pointer;
+}
+
+.pref.yoto {
+  fill: #E69F00;   /* 与党：オレンジ */
+}
+
+.pref.yato {
+  fill: #0072B2;   /* 野党：青 */
+}
+
+.pref.selected {
+  stroke-width: 3;
+}
+
+.bar {
+  width: 100%;
+  height: 20px;
+  background: #ddd;
+  margin-top: 4px;
+}
+
+#seatBar {
+  height: 100%;
+  background: #0072B2;
+  width: 0%;
+}
