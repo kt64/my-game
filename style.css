@@ -1,29 +1,27 @@
-body {
-  font-family: sans-serif;
+body { font-family: sans-serif; margin: 20px; }
+.hidden { display: none; }
+
+
+#game { display: flex; gap: 20px; }
+.left { width: 65%; }
+.right { width: 35%; }
+
+
+svg { width: 100%; border: 1px solid #ccc; }
+
+
+.pref {
+fill: #e0e0e0;
+stroke: #555;
+stroke-width: 1;
+cursor: pointer;
 }
 
-.container {
-  display: flex;
-}
 
-.map-area {
-  width: 65%;
-  border: 1px solid #999;
-}
+.pref.yoto { fill: #E69F00; }
+.pref.yato { fill: #0072B2; }
+.pref.selected { stroke-width: 3; }
 
-.control {
-  width: 35%;
-  padding: 10px;
-}
 
-svg path {
-  fill: #E0E0E0;
-  stroke: #333;
-  cursor: pointer;
-}
-
-.info {
-  margin-top: 10px;
-  border-top: 1px solid #aaa;
-  padding-top: 10px;
-}
+.bar { width: 100%; height: 20px; background: #ddd; }
+#seatBar { height: 100%; background: #0072B2; width: 0%; }
