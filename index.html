@@ -12,7 +12,6 @@
 <div id="setup">
   <h2>政党名を入力して公約を5つ選んでね</h2>
   <input type="text" id="partyName" placeholder="政党名">
-
   <div id="policies">
     <label><input type="checkbox" value="tax"> 税制改革</label>
     <label><input type="checkbox" value="wage"> 賃金政策</label>
@@ -22,22 +21,49 @@
     <label><input type="checkbox" value="peace"> 平和外交</label>
     <label><input type="checkbox" value="edu"> 教育改革</label>
     <label><input type="checkbox" value="reform"> 政治改革</label>
+    <label><input type="checkbox" value="agri"> 農業政策</label>
+    <label><input type="checkbox" value="immigration"> 外国人政策</label>
+    <label><input type="checkbox" value="corruption"> 政治とカネ</label>
+    <label><input type="checkbox" value="energy"> エネルギー政策</label>
   </div>
-
   <button onclick="startGame()">ゲームスタート</button>
 </div>
 
 <div id="game" style="display:none">
-  <h2 id="status"></h2>
-  <button onclick="action('speech')">街頭演説</button>
-  <button onclick="action('sns')">SNS発信</button>
-  <button onclick="action('tv')">TV討論</button>
-  <button onclick="action('local')">地方訪問</button>
+  <div id="main">
+    <div id="map-container">
+      <svg id="japan-map" viewBox="0 0 1000 1000" width="400">
+        <!-- 簡易版：都道府県パスを配置 -->
+        <!-- 本番用は47都道府県分追加 -->
+        <path id="hokkaido" d="M400,50 L420,50 L420,70 L400,70 Z" fill="#ccc" stroke="#333" onclick="clickPref('hokkaido')"></path>
+        <path id="tokyo" d="M500,500 L520,500 L520,520 L500,520 Z" fill="#ccc" stroke="#333" onclick="clickPref('tokyo')"></path>
+        <path id="osaka" d="M480,540 L500,540 L500,560 L480,560 Z" fill="#ccc" stroke="#333" onclick="clickPref('osaka')"></path>
+        <path id="aichi" d="M490,520 L510,520 L510,540 L490,540 Z" fill="#ccc" stroke="#333" onclick="clickPref('aichi')"></path>
+        <path id="fukuoka" d="M420,600 L440,600 L440,620 L420,620 Z" fill="#ccc" stroke="#333" onclick="clickPref('fukuoka')"></path>
+        <!-- 他の都道府県も同様に追加 -->
+      </svg>
+    </div>
 
-  <div id="support">
-    <p>若者支持：<span id="youth">0</span></p>
-    <p>中間層支持：<span id="middle">0</span></p>
-    <p>高齢者支持：<span id="senior">0</span></p>
+    <div id="controls">
+      <h2 id="status">日付／ターン</h2>
+      <button onclick="action('speech')">街頭演説</button>
+      <button onclick="action('sns')">SNS発信</button>
+      <button onclick="action('tv')">TV討論</button>
+      <button onclick="action('local')">地方訪問</button>
+
+      <div id="support">
+        <p>若者支持：<span id="youth">0</span></p>
+        <p>中間層支持：<span id="middle">0</span></p>
+        <p>高齢者支持：<span id="senior">0</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="news">
+    <h3>ニュース速報</h3>
+    <p id="newsText"></p>
+    <h3>議席予測</h3>
+    <p id="seatsText"></p>
   </div>
 </div>
 
@@ -49,4 +75,5 @@
 <script src="game.js"></script>
 </body>
 </html>
+
 
