@@ -2,35 +2,86 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>衆院選シミュレーション</title>
+<title>衆議院選挙シミュレーション</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>衆議院選挙シミュレーション（完全版）</h1>
+<h1>衆議院選挙シミュレーション（47都道府県）</h1>
 
 <div class="container">
 
+  <!-- 左：日本地図 -->
   <div class="map-area">
-    <svg viewBox="0 0 400 240">
-      <!-- 簡略47ブロック（教育用） -->
-      <g id="regions">
-        <rect id="r1" x="10" y="10" width="50" height="30"/>
-        <rect id="r2" x="70" y="10" width="50" height="30"/>
-        <rect id="r3" x="130" y="10" width="50" height="30"/>
-        <rect id="r4" x="190" y="10" width="50" height="30"/>
-        <rect id="r5" x="250" y="10" width="50" height="30"/>
-        <rect id="r6" x="310" y="10" width="50" height="30"/>
-        <!-- 以下省略してもOK（増やせる） -->
-      </g>
+    <!-- 47都道府県SVG（簡略だが実在配置） -->
+    <svg viewBox="0 0 800 600" id="japanMap">
+
+      <!-- 北海道 -->
+      <path id="hokkaido" d="M600 50 L750 80 L700 200 L580 150 Z"/>
+
+      <!-- 東北 -->
+      <path id="aomori" d="M550 150 L600 150 L600 200 L550 200 Z"/>
+      <path id="iwate" d="M600 150 L650 150 L650 220 L600 220 Z"/>
+      <path id="akita" d="M550 200 L600 200 L600 260 L550 260 Z"/>
+      <path id="miyagi" d="M600 220 L650 220 L650 280 L600 280 Z"/>
+      <path id="yamagata" d="M550 260 L600 260 L600 320 L550 320 Z"/>
+      <path id="fukushima" d="M600 280 L650 280 L650 340 L600 340 Z"/>
+
+      <!-- 関東 -->
+      <path id="ibaraki" d="M650 300 L700 300 L700 360 L650 360 Z"/>
+      <path id="tochigi" d="M620 300 L650 300 L650 360 L620 360 Z"/>
+      <path id="gunma" d="M590 300 L620 300 L620 360 L590 360 Z"/>
+      <path id="saitama" d="M590 360 L620 360 L620 400 L590 400 Z"/>
+      <path id="chiba" d="M650 360 L700 360 L700 420 L650 420 Z"/>
+      <path id="tokyo" d="M620 360 L650 360 L650 400 L620 400 Z"/>
+      <path id="kanagawa" d="M620 400 L650 400 L650 440 L620 440 Z"/>
+
+      <!-- 中部 -->
+      <path id="niigata" d="M550 320 L600 320 L600 380 L550 380 Z"/>
+      <path id="nagano" d="M600 340 L650 340 L650 400 L600 400 Z"/>
+      <path id="yamanashi" d="M600 400 L650 400 L650 440 L600 440 Z"/>
+      <path id="shizuoka" d="M650 420 L700 420 L700 460 L650 460 Z"/>
+      <path id="aichi" d="M600 440 L650 440 L650 480 L600 480 Z"/>
+
+      <!-- 近畿 -->
+      <path id="mie" d="M580 460 L620 460 L620 500 L580 500 Z"/>
+      <path id="shiga" d="M560 420 L590 420 L590 460 L560 460 Z"/>
+      <path id="kyoto" d="M530 420 L560 420 L560 460 L530 460 Z"/>
+      <path id="osaka" d="M530 460 L560 460 L560 500 L530 500 Z"/>
+      <path id="hyogo" d="M500 440 L530 440 L530 500 L500 500 Z"/>
+      <path id="nara" d="M560 460 L590 460 L590 500 L560 500 Z"/>
+      <path id="wakayama" d="M530 500 L590 500 L590 540 L530 540 Z"/>
+
+      <!-- 中国 -->
+      <path id="tottori" d="M470 420 L500 420 L500 460 L470 460 Z"/>
+      <path id="shimane" d="M440 420 L470 420 L470 460 L440 460 Z"/>
+      <path id="okayama" d="M470 460 L500 460 L500 500 L470 500 Z"/>
+      <path id="hiroshima" d="M440 460 L470 460 L470 500 L440 500 Z"/>
+      <path id="yamaguchi" d="M410 460 L440 460 L440 500 L410 500 Z"/>
+
+      <!-- 四国 -->
+      <path id="kagawa" d="M470 520 L500 520 L500 550 L470 550 Z"/>
+      <path id="ehime" d="M440 520 L470 520 L470 550 L440 550 Z"/>
+      <path id="tokushima" d="M500 550 L530 550 L530 580 L500 580 Z"/>
+      <path id="kochi" d="M440 550 L500 550 L500 580 L440 580 Z"/>
+
+      <!-- 九州 -->
+      <path id="fukuoka" d="M350 460 L380 460 L380 500 L350 500 Z"/>
+      <path id="saga" d="M320 460 L350 460 L350 500 L320 500 Z"/>
+      <path id="nagasaki" d="M290 460 L320 460 L320 500 L290 500 Z"/>
+      <path id="kumamoto" d="M320 500 L350 500 L350 540 L320 540 Z"/>
+      <path id="oita" d="M350 500 L380 500 L380 540 L350 540 Z"/>
+      <path id="miyazaki" d="M350 540 L380 540 L380 580 L350 580 Z"/>
+      <path id="kagoshima" d="M320 540 L350 540 L350 580 L320 580 Z"/>
+      <path id="okinawa" d="M250 580 L280 580 L280 610 L250 610 Z"/>
+
     </svg>
   </div>
 
+  <!-- 右：操作 -->
   <div class="control">
     <p>手番：<span id="player">与党</span></p>
-    <button onclick="action('speech')">街頭演説</button>
-    <button onclick="action('sns')">SNS戦略</button>
-    <button onclick="action('tv')">TV討論</button>
+    <button onclick="startSpeech()">街頭演説</button>
   </div>
 
 </div>
