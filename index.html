@@ -1,107 +1,47 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>衆院選シミュレーションゲーム</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>衆院選シミュレーション</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>衆院選シミュレーションゲーム</h1>
+<h1>衆議院選挙シミュレーション（完全版）</h1>
 
-<div id="setup">
-  <h2>政党名を入力して公約を5つ選んでね</h2>
-  <input type="text" id="partyName" placeholder="政党名">
-  <div id="policies">
-    <label><input type="checkbox" value="tax"> 税制改革</label>
-    <label><input type="checkbox" value="wage"> 賃金政策</label>
-    <label><input type="checkbox" value="child"> 子育て支援</label>
-    <label><input type="checkbox" value="pension"> 年金改革</label>
-    <label><input type="checkbox" value="defense"> 防衛</label>
-    <label><input type="checkbox" value="peace"> 平和外交</label>
-    <label><input type="checkbox" value="edu"> 教育改革</label>
-    <label><input type="checkbox" value="reform"> 政治改革</label>
-    <label><input type="checkbox" value="agri"> 農業政策</label>
-    <label><input type="checkbox" value="immigration"> 外国人政策</label>
-    <label><input type="checkbox" value="corruption"> 政治とカネ</label>
-    <label><input type="checkbox" value="energy"> エネルギー政策</label>
+<div class="container">
+
+  <div class="map-area">
+    <svg viewBox="0 0 400 240">
+      <!-- 簡略47ブロック（教育用） -->
+      <g id="regions">
+        <rect id="r1" x="10" y="10" width="50" height="30"/>
+        <rect id="r2" x="70" y="10" width="50" height="30"/>
+        <rect id="r3" x="130" y="10" width="50" height="30"/>
+        <rect id="r4" x="190" y="10" width="50" height="30"/>
+        <rect id="r5" x="250" y="10" width="50" height="30"/>
+        <rect id="r6" x="310" y="10" width="50" height="30"/>
+        <!-- 以下省略してもOK（増やせる） -->
+      </g>
+    </svg>
   </div>
-  <button onclick="startGame()">ゲームスタート</button>
+
+  <div class="control">
+    <p>手番：<span id="player">与党</span></p>
+    <button onclick="action('speech')">街頭演説</button>
+    <button onclick="action('sns')">SNS戦略</button>
+    <button onclick="action('tv')">TV討論</button>
+  </div>
+
 </div>
 
-<div id="game" style="display:none">
-  <div id="main">
-    <div id="map-container">
-      <svg id="japan-map" viewBox="0 0 1000 1000" width="450">
-        <!-- 北海道地方 -->
-        <path id="hokkaido" d="M400,50 L450,50 L450,100 L400,100 Z" stroke="#333" onclick="clickPref('hokkaido')"></path>
-        <!-- 東北地方 -->
-        <path id="aomori" d="M400,110 L450,110 L450,160 L400,160 Z" stroke="#333" onclick="clickPref('aomori')"></path>
-        <path id="iwate" d="M460,110 L510,110 L510,160 L460,160 Z" stroke="#333" onclick="clickPref('iwate')"></path>
-        <path id="miyagi" d="M520,110 L570,110 L570,160 L520,160 Z" stroke="#333" onclick="clickPref('miyagi')"></path>
-        <path id="akita" d="M460,170 L510,170 L510,220 L460,220 Z" stroke="#333" onclick="clickPref('akita')"></path>
-        <path id="yamagata" d="M520,170 L570,170 L570,220 L520,220 Z" stroke="#333" onclick="clickPref('yamagata')"></path>
-        <path id="fukushima" d="M580,170 L630,170 L630,220 L580,220 Z" stroke="#333" onclick="clickPref('fukushima')"></path>
-        <!-- 関東地方 -->
-        <path id="ibaraki" d="M580,230 L630,230 L630,280 L580,280 Z" stroke="#333" onclick="clickPref('ibaraki')"></path>
-        <path id="tochigi" d="M520,230 L570,230 L570,280 L520,280 Z" stroke="#333" onclick="clickPref('tochigi')"></path>
-        <path id="gunma" d="M460,230 L510,230 L510,280 L460,280 Z" stroke="#333" onclick="clickPref('gunma')"></path>
-        <path id="saitama" d="M460,290 L510,290 L510,340 L460,340 Z" stroke="#333" onclick="clickPref('saitama')"></path>
-        <path id="chiba" d="M520,290 L570,290 L570,340 L520,340 Z" stroke="#333" onclick="clickPref('chiba')"></path>
-        <path id="tokyo" d="M520,350 L570,350 L570,400 L520,400 Z" stroke="#333" onclick="clickPref('tokyo')"></path>
-        <path id="kanagawa" d="M580,350 L630,350 L630,400 L580,400 Z" stroke="#333" onclick="clickPref('kanagawa')"></path>
-        <!-- 中部・近畿・中国・四国・九州省略（47都道府県同様配置） -->
-        <!-- ここに前回作った47都道府県のSVG pathをすべて追加 -->
-      </svg>
-    </div>
-
-    <div id="controls">
-      <h2 id="status">日付／ターン</h2>
-      <button onclick="action('speech')">街頭演説</button>
-      <button onclick="action('sns')">SNS発信</button>
-      <button onclick="action('tv')">TV討論</button>
-      <button onclick="action('local')">地方訪問</button>
-
-      <div id="support">
-        <p>若者支持：<span id="youth">0</span></p>
-        <p>中間層支持：<span id="middle">0</span></p>
-        <p>高齢者支持：<span id="senior">0</span></p>
-      </div>
-    </div>
-  </div>
-
-  <div id="news">
-    <h3>ニュース速報</h3>
-    <p id="newsText"></p>
-    <h3>議席予測</h3>
-    <p id="seatsText"></p>
-  </div>
-</div>
-
-<div id="result" style="display:none">
-  <h2>選挙結果</h2>
-  <p id="resultText"></p>
+<div class="info">
+  <p id="turn">ターン：0 / 45</p>
+  <p id="seats">与党200｜野党265（過半数233）</p>
+  <p id="news">ニュース：選挙戦が始まりました</p>
 </div>
 
 <script src="game.js"></script>
-<script>
-  // 初期勢力の色を設定
-  const prefFaction = {
-    hokkaido:"opposition", aomori:"opposition", iwate:"opposition", miyagi:"opposition",
-    akita:"opposition", yamagata:"opposition", fukushima:"opposition",
-    tokyo:"ruling", kanagawa:"ruling", saitama:"ruling", chiba:"ruling",
-    aichi:"ruling", osaka:"ruling", hyogo:"ruling", kyoto:"ruling",
-    fukuoka:"ruling", okinawa:"opposition"
-  };
-  const prefectures=["hokkaido","aomori","iwate","miyagi","akita","yamagata","fukushima","ibaraki","tochigi","gunma","saitama","chiba","tokyo","kanagawa","niigata","toyama","ishikawa","fukui","yamanashi","nagano","gifu","shizuoka","aichi","mie","shiga","kyoto","osaka","hyogo","nara","wakayama","tottori","shimane","okayama","hiroshima","yamaguchi","tokushima","kagawa","ehime","kochi","fukuoka","saga","nagasaki","kumamoto","oita","miyazaki","kagoshima","okinawa"];
-  prefectures.forEach(p=>{
-    let elem=document.getElementById(p);
-    if(!elem) return;
-    if(prefFaction[p]=="ruling") elem.setAttribute("fill","rgb(200,50,50)");
-    else if(prefFaction[p]=="opposition") elem.setAttribute("fill","rgb(50,50,200)");
-    else elem.setAttribute("fill","rgb(200,200,200)");
-  });
-</script>
 </body>
 </html>
 
