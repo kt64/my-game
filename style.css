@@ -14,8 +14,22 @@ h1, h2, h3 {
   padding: 15px;
   border: 2px solid #ccc;
   border-radius: 10px;
-  max-width: 600px;
+  max-width: 1000px;
   background: #fff;
+}
+
+#main {
+  display: flex;
+  justify-content: space-between;
+}
+
+#map-container {
+  flex: 1;
+}
+
+#controls {
+  flex: 1;
+  margin-left: 20px;
 }
 
 button {
@@ -36,5 +50,10 @@ button:hover {
 #support {
   margin: 10px 0;
   font-weight: bold;
+}
+
+#news {
+  margin-top: 20px;
+  text-align: left;
 }
 
