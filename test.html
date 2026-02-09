@@ -2,82 +2,98 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>衆院選シミュレーター：真・交互ターン版</title>
+    <title>衆院選決戦2026 - 究極対戦版</title>
     <style>
-        :root { --you: #22c55e; --ai: #f97316; --neu: #475569; }
-        body { margin: 0; background: #0f172a; color: #e5e7eb; font-family: 'Hiragino Sans', 'Meiryo', sans-serif; overflow: hidden; }
+        :root { --you: #00ff41; --ai: #ff4500; --neu: #2d3748; }
+        body { margin: 0; background: #020617; color: #f8fafc; font-family: 'Hiragino Sans', 'Meiryo', sans-serif; overflow: hidden; }
         
-        /* メインレイアウト */
-        .container { display: flex; height: 82vh; }
-        .map-area { flex: 2.5; position: relative; background: #1e293b; overflow: auto; border-bottom: 2px solid #334155; }
-        .side { flex: 1; background: #111827; padding: 15px; border-left: 2px solid #334155; display: flex; flex-direction: column; gap: 10px; }
+        /* レイアウト */
+        .container { display: flex; height: 85vh; width: 100vw; }
+        .map-area { flex: 3; position: relative; background: #0f172a; overflow: auto; border: 2px solid #1e293b; }
+        .side { flex: 1; background: #1e293b; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
         
-        /* 地図 */
-        .japan-map { position: relative; width: 950px; height: 700px; margin: 0 auto; background: #0f172a; scale: 0.85; transform-origin: top center; }
-        .pref { position: absolute; width: 65px; height: 45px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; border-radius: 6px; cursor: pointer; transition: 0.2s; color: white; border: 1px solid rgba(255,255,255,0.2); z-index: 5; }
-        .pref b { font-size: 13px; }
-        .pref small { font-size: 9px; opacity: 0.9; }
+        /* 巨大化した地図チップ */
+        .japan-map { position: relative; width: 1000px; height: 800px; margin: 20px; background: #020617; border-radius: 20px; }
+        .pref { 
+            position: absolute; width: 85px; height: 55px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            border-radius: 8px; cursor: pointer; transition: all 0.3s; color: white; 
+            border: 2px solid rgba(255,255,255,0.1); font-weight: bold;
+        }
+        .pref b { font-size: 14px; margin-bottom: 2px; }
+        .pref span { font-size: 12px; color: #cbd5e1; }
         .pref.neutral { background: var(--neu); }
-        .pref.you { background: var(--you); box-shadow: 0 0 15px var(--you); z-index: 10; border-color: white; }
-        .pref.ai { background: var(--ai); box-shadow: 0 0 15px var(--ai); z-index: 10; border-color: white; }
+        .pref.you { background: var(--you); color: #000; box-shadow: 0 0 20px var(--you); border-color: #fff; z-index: 50; }
+        .pref.ai { background: var(--ai); color: #fff; box-shadow: 0 0 20px var(--ai); border-color: #fff; z-index: 50; }
+        .pref:hover { transform: scale(1.2); z-index: 100; border-color: yellow; }
 
-        /* ニュース・状態 */
-        .header-info { display: flex; justify-content: space-between; padding: 10px 20px; background: #0f172a; font-weight: bold; }
-        .turn-display { background: #facc15; color: #000; padding: 12px; text-align: center; border-radius: 8px; font-weight: 900; font-size: 1.2rem; border: 2px solid #000; }
-        .news-box { background: #000; padding: 10px; border-radius: 8px; flex-grow: 1; border: 1px solid #3b82f6; overflow-y: auto; font-family: monospace; color: #34d399; font-size: 0.9rem; }
-        .breaking-news { color: #ff4500; font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* ニュース・ターン */
+        .turn-display { 
+            background: #fbbf24; color: #000; padding: 15px; text-align: center; 
+            border-radius: 12px; font-weight: 900; font-size: 1.5rem; border: 4px solid #000;
+        }
+        .news-box { 
+            background: #000; padding: 15px; border-radius: 10px; flex-grow: 1; 
+            border: 2px solid #3b82f6; overflow-y: auto; font-family: 'Courier New', monospace; 
+            color: #10b981; font-size: 0.95rem; line-height: 1.4;
+        }
+        .breaking { color: #ff0000; font-weight: bold; text-decoration: underline; animation: flash 0.8s infinite; }
+        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
         /* ボタン */
-        .actions button { width: 100%; padding: 12px; margin-bottom: 8px; background: #334155; color: white; border: 2px solid #475569; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.9rem; }
-        .actions button:hover:not(:disabled) { background: #475569; border-color: #3b82f6; }
-        .actions button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .actions button { 
+            width: 100%; padding: 15px; background: #334155; color: white; 
+            border: 1px solid #475569; border-radius: 10px; cursor: pointer; 
+            text-align: left; font-size: 1rem; font-weight: bold; transition: 0.2s;
+        }
+        .actions button:hover:not(:disabled) { background: #475569; transform: translateX(5px); border-color: #3b82f6; }
+        .actions button:disabled { opacity: 0.2; cursor: not-allowed; }
 
         /* 議席バー */
-        .seat-bar-container { height: 18vh; background: #0f172a; padding: 10px 50px; }
-        .seat-bar { height: 45px; background: #334155; display: flex; position: relative; border-radius: 25px; overflow: hidden; border: 3px solid #000; }
-        .bar { transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; }
-        .bar.you { background: var(--you); }
-        .bar.ai { background: var(--ai); }
-        .majority-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #fff; z-index: 20; }
+        .seat-bar-container { height: 15vh; background: #020617; padding: 10px 60px; }
+        .seat-bar { height: 50px; background: #1e293b; display: flex; position: relative; border-radius: 25px; overflow: hidden; border: 4px solid #334155; }
+        .bar { transition: width 0.7s ease-in-out; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; }
+        .bar.you { background: var(--you); color: #000; }
+        .bar.ai { background: var(--ai); color: #fff; }
+        .majority-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #fff; z-index: 30; }
         
-        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:2000; }
-        .modal-content { background:#1e293b; padding:40px; border-radius:20px; text-align:center; border:5px solid var(--you); }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:9999; }
+        .modal-content { background:#1e293b; padding:50px; border-radius:30px; text-align:center; border:6px solid var(--you); }
     </style>
 </head>
 <body>
 
-<div class="header-info">
-    <div>衆院選シミュレーター2026</div>
-    <div id="timeDisplay">1日目：朝</div>
-</div>
-
 <div class="container">
     <div class="map-area">
-        <div id="japan-map" class="japan-map"></div>
+        <div id="japan-map" class="japan-map">
+            </div>
     </div>
 
     <div class="side">
-        <div class="turn-display" id="turnIndicator">あなたの番です</div>
+        <div id="timeInfo" style="text-align:center; font-size:1.2rem; font-weight:bold; color:#fbbf24;">1日目：朝</div>
+        <div class="turn-display" id="turnIndicator">あなたの番</div>
         
         <div class="actions" id="actionPanel">
-            <button onclick="setMode('speech')">🎤 街頭演説<br><small>選んだ県を確実に獲得します</small></button>
-            <button onclick="doSNS()">📱 SNS戦略<br><small>都市部(東京など)の支持を少しずつ広げます</small></button>
-            <button onclick="doTV()">📺 テレビ出演<br><small>全国の無党派層をわずかに取り込みます</small></button>
-            <button onclick="doSurvey()">📊 情勢調査<br><small>現在の予測議席を詳しく分析します</small></button>
+            <button onclick="setMode('speech')">🎤 街頭演説 (指定した県を確実獲得)</button>
+            <button onclick="doSNS()">📱 SNS戦略 (都市部のどこかを獲得)</button>
+            <button onclick="doSurvey()">📊 情勢調査 (獲得議席をチェック)</button>
         </div>
 
         <div class="news-box" id="newsFeed">
-            <div>【公示】465議席を巡る戦いが始まりました。</div>
+            <div>【速報】第51回衆議院議員総選挙、公示。</div>
         </div>
     </div>
 </div>
 
 <div class="seat-bar-container">
-    <div style="text-align:center; margin-bottom:5px; font-weight:bold;">議席予測（過半数：233）</div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-weight:bold;">
+        <span>あなたの政党</span>
+        <span>過半数ライン(233)</span>
+        <span>相手の政党</span>
+    </div>
     <div class="seat-bar">
         <div id="barYou" class="bar you" style="width: 0%">0</div>
-        <div id="barNeutral" class="bar neutral" style="width: 100%">465</div>
+        <div id="barNeutral" class="bar neutral" style="flex-grow: 1; background: #475569;"></div>
         <div id="barAI" class="bar ai" style="width: 0%">0</div>
         <div class="majority-line"></div>
     </div>
@@ -85,220 +101,205 @@
 
 <div id="resultModal" class="modal">
     <div class="modal-content">
-        <h1 id="resultTitle"></h1>
-        <h2 id="finalSeats"></h2>
-        <p id="resultText"></p>
-        <button onclick="location.reload()" style="background:var(--you); color:white; padding:15px 30px; border:none; border-radius:8px; cursor:pointer;">タイトルに戻る</button>
+        <h1 id="resultTitle">結果発表</h1>
+        <h2 id="finalSeats" style="font-size:3rem;"></h2>
+        <p id="resultText" style="font-size:1.5rem;"></p>
+        <button onclick="location.reload()" style="background:var(--you); color:#000; padding:20px 40px; font-size:1.5rem; border:none; border-radius:15px; margin-top:20px;">タイトルに戻る</button>
     </div>
 </div>
 
 <script>
+// 地図データを極限までバラバラに配置（重なり防止）
 const PREF_DATA = {
-    "北海道": { x: 750, y: 50, s: 17, t: "rural" }, "青森": { x: 750, y: 180, s: 6, t: "rural" },
-    "岩手": { x: 830, y: 220, s: 6, t: "rural" }, "秋田": { x: 670, y: 220, s: 5, t: "rural" },
-    "山形": { x: 670, y: 300, s: 6, t: "rural" }, "宮城": { x: 830, y: 300, s: 10, t: "rural" },
-    "福島": { x: 750, y: 350, s: 9, t: "rural" }, "新潟": { x: 580, y: 280, s: 10, t: "rural" },
-    "富山": { x: 480, y: 280, s: 6, t: "rural" }, "石川": { x: 400, y: 280, s: 6, t: "rural" },
-    "福井": { x: 350, y: 350, s: 4, t: "rural" }, "長野": { x: 520, y: 350, s: 10, t: "rural" },
-    "群馬": { x: 620, y: 380, s: 10, t: "rural" }, "栃木": { x: 700, y: 400, s: 10, t: "rural" },
-    "茨城": { x: 800, y: 430, s: 13, t: "rural" }, "埼玉": { x: 650, y: 460, s: 28, t: "urban" },
-    "東京": { x: 650, y: 550, s: 30, t: "urban" }, "千葉": { x: 780, y: 550, s: 22, t: "urban" },
-    "神奈川": { x: 550, y: 580, s: 26, t: "urban" }, "山梨": { x: 500, y: 480, s: 4, t: "rural" },
-    "静岡": { x: 450, y: 550, s: 16, t: "urban" }, "愛知": { x: 400, y: 480, s: 15, t: "industry" },
-    "岐阜": { x: 420, y: 400, s: 10, t: "rural" }, "滋賀": { x: 350, y: 430, s: 4, t: "rural" },
-    "三重": { x: 380, y: 580, s: 8, t: "rural" }, "奈良": { x: 300, y: 530, s: 6, t: "rural" },
-    "和歌山": { x: 280, y: 620, s: 5, t: "rural" }, "京都": { x: 280, y: 430, s: 12, t: "urban" },
-    "大阪": { x: 200, y: 500, s: 19, t: "urban" }, "兵庫": { x: 200, y: 400, s: 12, t: "urban" },
-    "鳥取": { x: 130, y: 350, s: 4, t: "rural" }, "島根": { x: 30, y: 350, s: 4, t: "rural" },
-    "岡山": { x: 130, y: 430, s: 10, t: "rural" }, "広島": { x: 50, y: 430, s: 12, t: "industry" },
-    "山口": { x: 30, y: 520, s: 8, t: "rural" }, "香川": { x: 130, y: 550, s: 6, t: "rural" },
-    "愛媛": { x: 30, y: 580, s: 8, t: "rural" }, "徳島": { x: 210, y: 600, s: 6, t: "rural" },
-    "高知": { x: 130, y: 630, s: 4, t: "rural" }, "福岡": { x: 100, y: 250, s: 11, t: "urban" },
-    "佐賀": { x: 20, y: 220, s: 4, t: "rural" }, "長崎": { x: 20, y: 280, s: 8, t: "rural" },
-    "熊本": { x: 100, y: 180, s: 8, t: "rural" }, "大分": { x: 180, y: 220, s: 6, t: "rural" },
-    "宮崎": { x: 180, y: 130, s: 6, t: "rural" }, "鹿児島": { x: 100, y: 100, s: 9, t: "rural" },
+    "北海道": { x: 800, y: 30, s: 17, t: "rural" }, "青森": { x: 800, y: 130, s: 6, t: "rural" },
+    "秋田": { x: 700, y: 170, s: 5, t: "rural" }, "岩手": { x: 880, y: 200, s: 6, t: "rural" },
+    "山形": { x: 720, y: 250, s: 6, t: "rural" }, "宮城": { x: 860, y: 280, s: 10, t: "rural" },
+    "福島": { x: 780, y: 340, s: 9, t: "rural" }, "新潟": { x: 620, y: 230, s: 10, t: "rural" },
+    "富山": { x: 500, y: 230, s: 6, t: "rural" }, "石川": { x: 400, y: 210, s: 6, t: "rural" },
+    "福井": { x: 340, y: 280, s: 4, t: "rural" }, "長野": { x: 540, y: 330, s: 10, t: "rural" },
+    "群馬": { x: 650, y: 370, s: 10, t: "rural" }, "栃木": { x: 740, y: 410, s: 10, t: "rural" },
+    "茨城": { x: 850, y: 440, s: 13, t: "rural" }, "埼玉": { x: 660, y: 470, s: 28, t: "urban" },
+    "東京": { x: 700, y: 560, s: 30, t: "urban" }, "千葉": { x: 820, y: 550, s: 22, t: "urban" },
+    "神奈川": { x: 580, y: 580, s: 26, t: "urban" }, "山梨": { x: 500, y: 450, s: 4, t: "rural" },
+    "静岡": { x: 480, y: 550, s: 16, t: "urban" }, "愛知": { x: 410, y: 480, s: 15, t: "industry" },
+    "岐阜": { x: 420, y: 380, s: 10, t: "rural" }, "滋賀": { x: 350, y: 400, s: 4, t: "rural" },
+    "京都": { x: 300, y: 350, s: 12, t: "urban" }, "大阪": { x: 250, y: 430, s: 19, t: "urban" },
+    "兵庫": { x: 210, y: 330, s: 12, t: "urban" }, "奈良": { x: 320, y: 510, s: 6, t: "rural" },
+    "和歌山": { x: 260, y: 560, s: 5, t: "rural" }, "三重": { x: 380, y: 580, s: 8, t: "rural" },
+    "鳥取": { x: 130, y: 280, s: 4, t: "rural" }, "島根": { x: 30, y: 280, s: 4, t: "rural" },
+    "岡山": { x: 130, y: 380, s: 10, t: "rural" }, "広島": { x: 40, y: 380, s: 12, t: "industry" },
+    "山口": { x: 30, y: 480, s: 8, t: "rural" }, "香川": { x: 130, y: 520, s: 6, t: "rural" },
+    "徳島": { x: 210, y: 620, s: 6, t: "rural" }, "愛媛": { x: 30, y: 580, s: 8, t: "rural" },
+    "高知": { x: 130, y: 620, s: 4, t: "rural" }, "福岡": { x: 130, y: 180, s: 11, t: "urban" },
+    "佐賀": { x: 30, y: 150, s: 4, t: "rural" }, "長崎": { x: 30, y: 230, s: 8, t: "rural" },
+    "大分": { x: 220, y: 200, s: 6, t: "rural" }, "熊本": { x: 100, y: 250, s: 8, t: "rural" },
+    "宮崎": { x: 220, y: 120, s: 6, t: "rural" }, "鹿児島": { x: 100, y: 50, s: 9, t: "rural" },
     "沖縄": { x: 20, y: 50, s: 4, t: "rural" }
 };
 
 let day = 1;
-let turnStep = 0; // 0:朝, 1:昼, 2:夜
+let turnStep = 0; // 朝, 昼, 夜
 let isPlayerTurn = true;
-let actionPoints = 45;
+let actionLeft = 45;
 const status = {};
 let currentMode = null;
 
 function init() {
     const map = document.getElementById("japan-map");
+    map.innerHTML = "";
     Object.keys(PREF_DATA).forEach(p => {
         status[p] = "neutral";
         const d = document.createElement("div");
         d.className = "pref neutral";
         d.id = `pref-${p}`;
-        d.innerHTML = `<b>${p}</b><small>(${PREF_DATA[p].s})</small>`;
+        d.innerHTML = `<b>${p}</b><span>${PREF_DATA[p].s}議席</span>`;
         d.style.left = PREF_DATA[p].x + "px";
         d.style.top = PREF_DATA[p].y + "px";
-        d.onclick = () => handleMapClick(p);
+        d.onclick = () => handlePrefClick(p);
         map.appendChild(d);
     });
     updateUI();
 }
 
-function log(msg, isBreaking = false) {
+function log(msg, important = false) {
     const box = document.getElementById("newsFeed");
     const div = document.createElement("div");
-    if (isBreaking) div.className = "breaking-news";
+    if (important) div.className = "breaking";
     div.innerHTML = `> ${msg}`;
     box.prepend(div);
 }
 
 function setMode(m) {
-    if (!isPlayerTurn) return;
+    if(!isPlayerTurn) return;
     currentMode = m;
-    log("地図から都道府県を選択してください。");
+    log(`${m === 'speech' ? '演説する県を地図で選んでください' : '行動を選択中...'}`);
 }
 
-function handleMapClick(p) {
+function handlePrefClick(p) {
     if (!isPlayerTurn || currentMode !== "speech") return;
+    if (status[p] === "you") { log("既に獲得済みの県です"); return; }
+    
     status[p] = "you";
-    log(`${p}で演説。支持を固めました。`);
-    endTurn();
+    log(`${p}で演説を行い、支持を固めました！`);
+    endPlayerTurn();
 }
 
 function doSNS() {
     if (!isPlayerTurn) return;
-    let success = false;
-    const urbans = Object.keys(PREF_DATA).filter(p => PREF_DATA[p].t === "urban" && status[p] === "neutral");
-    if (urbans.length > 0) {
-        const target = urbans[Math.floor(Math.random() * urbans.length)];
-        status[target] = "you";
-        log(`SNS戦略が成功！${target}の無党派層が動きました。`);
-        success = true;
-    }
-    if (!success) log("SNSでの反応は薄いようです。");
-    endTurn();
-}
-
-function doTV() {
-    if (!isPlayerTurn) return;
-    const neutrals = Object.keys(status).filter(p => status[p] === "neutral");
-    if (neutrals.length > 0 && Math.random() > 0.4) {
-        const target = neutrals[Math.floor(Math.random() * neutrals.length)];
-        status[target] = "you";
-        log(`テレビ出演で${target}の支持が向上。`);
+    const targets = Object.keys(PREF_DATA).filter(p => PREF_DATA[p].t === "urban" && status[p] !== "you");
+    if (targets.length > 0) {
+        const p = targets[Math.floor(Math.random() * targets.length)];
+        status[p] = "you";
+        log(`SNS戦略が的中！${p}の無党派層を取り込みました。`);
     } else {
-        log("テレビ出演しましたが、大きな変化はありません。");
+        log("SNSの反応は鈍いようです。");
     }
-    endTurn();
+    endPlayerTurn();
 }
 
 function doSurvey() {
     if (!isPlayerTurn) return;
-    const you = calculateSeats("you");
-    log(`【調査結果】現在${you}議席確保の勢いです。`);
-    endTurn();
+    const s = calculate("you");
+    log(`【情勢調査】現在 ${s} 議席。目標まであと ${Math.max(0, 233-s)} です。`);
+    endPlayerTurn();
 }
 
-function endTurn() {
-    currentMode = null;
+function endPlayerTurn() {
     isPlayerTurn = false;
-    actionPoints--;
+    currentMode = null;
+    actionLeft--;
     updateUI();
     
-    // AIのターンへ
-    document.getElementById("turnIndicator").textContent = "相手の番です...";
-    document.getElementById("turnIndicator").style.background = "#f97316";
-    
-    setTimeout(aiTurn, 1000);
+    const indicator = document.getElementById("turnIndicator");
+    indicator.textContent = "相手の番 (思考中...)";
+    indicator.style.background = "#ff4500";
+    indicator.style.color = "#fff";
+
+    setTimeout(aiTurn, 1200); // 1.2秒後にAIが動く
 }
 
 function aiTurn() {
-    const neutrals = Object.keys(status).filter(p => status[p] === "neutral");
+    const neutrals = Object.keys(status).filter(p => status[p] !== "ai");
     if (neutrals.length > 0) {
-        const target = neutrals[Math.floor(Math.random() * neutrals.length)];
-        status[target] = "ai";
-        log(`相手候補が${target}で支持を広げました。`);
+        const p = neutrals[Math.floor(Math.random() * neutrals.length)];
+        status[p] = "ai";
+        log(`相手候補が${p}で集会を開催。支持が逆転しました！`);
     }
-    
-    // ターンの進行
+
     turnStep++;
     if (turnStep > 2) {
         turnStep = 0;
         day++;
-    }
-    
-    // ランダム不祥事イベント（10%の確率）
-    if (Math.random() < 0.15) {
-        triggerScandal();
+        // 3日ごとに必ずニュース発生
+        if (day % 3 === 0) triggerScandal();
     }
 
-    if (actionPoints <= 0 || Object.keys(status).filter(p => status[p] === "neutral").length === 0) {
-        finishGame();
+    if (actionLeft <= 0) {
+        showFinalResult();
     } else {
         isPlayerTurn = true;
-        document.getElementById("turnIndicator").textContent = "あなたの番です";
-        document.getElementById("turnIndicator").style.background = "#facc15";
+        const indicator = document.getElementById("turnIndicator");
+        indicator.textContent = "あなたの番";
+        indicator.style.background = "#fbbf24";
+        indicator.style.color = "#000";
         updateUI();
     }
 }
 
 function triggerScandal() {
-    const isYou = Math.random() > 0.5;
-    const targetSide = isYou ? "you" : "ai";
-    const affected = Object.keys(status).filter(p => status[p] === targetSide);
-    
-    if (affected.length > 0) {
-        const p = affected[Math.floor(Math.random() * affected.length)];
-        status[p] = isYou ? "ai" : "you"; // 支持が逆転
-        const party = isYou ? "あなたの党" : "相手の党";
-        log(`【速報】${party}に不祥事発覚！${p}の支持が離反しました。`, true);
+    const side = Math.random() > 0.5 ? "you" : "ai";
+    const targets = Object.keys(status).filter(p => status[p] === side);
+    if (targets.length > 0) {
+        const p = targets[Math.floor(Math.random() * targets.length)];
+        status[p] = (side === "you") ? "ai" : "you";
+        const party = (side === "you") ? "あなたの党" : "相手の党";
+        log(`【速報】${party}の幹部に不祥事！${p}の支持が急落しました！`, true);
     }
 }
 
-function calculateSeats(owner) {
+function calculate(owner) {
     return Object.keys(status).reduce((sum, p) => status[p] === owner ? sum + PREF_DATA[p].s : sum, 0);
 }
 
 function updateUI() {
-    const you = calculateSeats("you");
-    const ai = calculateSeats("ai");
-    const neu = 465 - you - ai;
-    const times = ["朝", "昼", "夜"];
+    const you = calculate("you");
+    const ai = calculate("ai");
+    const steps = ["朝", "昼", "夜"];
 
     document.getElementById("barYou").style.width = (you / 465 * 100) + "%";
-    document.getElementById("barYou").textContent = you;
+    document.getElementById("barYou").textContent = you + " 議席";
     document.getElementById("barAI").style.width = (ai / 465 * 100) + "%";
-    document.getElementById("barAI").textContent = ai;
-    document.getElementById("barNeutral").style.width = (neu / 465 * 100) + "%";
-    document.getElementById("barNeutral").textContent = neu;
-
-    document.getElementById("timeDisplay").textContent = `${day}日目：${times[turnStep]}`;
+    document.getElementById("barAI").textContent = ai + " 議席";
     
+    document.getElementById("timeInfo").textContent = `${day}日目：${steps[turnStep]} (残り${actionLeft}回)`;
+
     Object.keys(status).forEach(p => {
-        document.getElementById(`pref-${p}`).className = `pref ${status[p]}`;
+        const el = document.getElementById(`pref-${p}`);
+        el.className = `pref ${status[p]}`;
     });
 
-    const panel = document.getElementById("actionPanel");
-    const btns = panel.getElementsByTagName("button");
+    const btns = document.getElementById("actionPanel").getElementsByTagName("button");
     for(let b of btns) b.disabled = !isPlayerTurn;
 }
 
-function finishGame() {
-    // 最終処理：中立を分ける
+function showFinalResult() {
+    // 最終的に中立をなくす
     Object.keys(status).forEach(p => {
         if (status[p] === "neutral") status[p] = Math.random() > 0.5 ? "you" : "ai";
     });
     updateUI();
-    
-    const you = calculateSeats("you");
-    document.getElementById("resultModal").style.display = "flex";
-    document.getElementById("finalSeats").textContent = `${you} 議席`;
+
+    const you = calculate("you");
+    const modal = document.getElementById("resultModal");
+    modal.style.display = "flex";
+    document.getElementById("finalSeats").textContent = you + " 議席";
     
     if (you >= 233) {
-        document.getElementById("resultTitle").textContent = "✨ 圧勝！単独過半数獲得 ✨";
-        document.getElementById("resultText").textContent = "新しいリーダーの誕生です。";
+        document.getElementById("resultTitle").textContent = "✨ 衆院選 勝利！ ✨";
+        document.getElementById("resultText").textContent = "単独過半数を達成し、内閣総理大臣に指名されました！";
     } else {
-        document.getElementById("resultTitle").textContent = "● 選挙に敗北 ●";
-        document.getElementById("resultText").textContent = "過半数に届かず、野党となりました。";
+        document.getElementById("resultTitle").textContent = "🌑 選挙 敗北 🌑";
+        document.getElementById("resultText").textContent = "過半数に届かず。野党として再起を誓います。";
     }
 }
 
