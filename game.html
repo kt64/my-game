@@ -9,22 +9,26 @@
 
 <div class="container">
   <div class="map-area">
-    <h2 id="partyDisplay"></h2>
-    <div id="japan-map" class="japan-map">
-      </div>
+    <div class="header-info">
+      <h2 id="partyDisplay"></h2>
+      <h3 id="timeDisplay">1日目：朝</h3>
+    </div>
+    <div id="japan-map" class="japan-map"></div>
   </div>
 
   <div class="side">
-    <h3 id="dayDisplay">選挙戦 1日目 / 15日</h3>
+    <h3 id="dayDisplay">残り 15日</h3>
     
+    <div class="turn-indicator" id="turnInfo">あなたの番です</div>
+
     <div class="actions">
-      <button onclick="startSpeech()">🎤 街頭演説</button>
-      <button onclick="doSNS()">📱 SNS活動</button>
-      <button onclick="doSurvey()">📊 情勢調査</button>
+      <button id="btnSpeech" onclick="startSpeech()">🎤 街頭演説 (1回分)</button>
+      <button id="btnSNS" onclick="doSNS()">📱 SNS活動 (1回分)</button>
+      <button id="btnSurvey" onclick="doSurvey()">📊 情勢調査 (1回分)</button>
     </div>
 
     <div class="status-box">
-      <p>現在獲得見込み：<span id="seats" class="highlight">0</span> 議席</p>
+      <p>獲得確定：<span id="seats" class="highlight">0</span> / 465</p>
       <p id="news" class="news-feed">行動を選択してください</p>
     </div>
   </div>
@@ -33,16 +37,17 @@
 <div class="seat-bar-container">
   <div class="seat-bar">
     <div id="barYou" class="bar you"></div>
-    <div class="majority-line">233</div>
+    <div id="barNeutral" class="bar neutral"></div>
     <div id="barAI" class="bar ai"></div>
+    <div class="majority-line">233</div>
   </div>
 </div>
 
 <div id="resultModal" class="modal">
   <div class="modal-content">
-    <h1 id="resultTitle">選挙結果</h1>
-    <p id="resultText"></p>
+    <h1 id="resultTitle"></h1>
     <h2 id="finalSeats"></h2>
+    <p id="resultText"></p>
     <button onclick="location.href='index.html'" class="main-btn">タイトルに戻る</button>
   </div>
 </div>
