@@ -1,59 +1,84 @@
 body {
+  margin: 0;
   font-family: sans-serif;
-  margin: 20px;
+  background: #0f172a;
+  color: #e5e7eb;
 }
 
-.hidden {
-  display: none;
+.setup {
+  padding: 40px;
 }
 
-#game {
+.container {
   display: flex;
-  gap: 20px;
+  height: 80vh;
 }
 
-.left {
-  width: 65%;
+.map-area {
+  flex: 2;
+  padding: 10px;
 }
 
-.right {
-  width: 35%;
+.side {
+  flex: 1;
+  padding: 10px;
+  background: #111827;
 }
 
-svg {
+button {
+  display: block;
   width: 100%;
-  height: 420px;   /* ← 地図が表示されない最大原因を防止 */
-  border: 1px solid #ccc;
-}
-
-.pref {
-  fill: #e0e0e0;
-  stroke: #555;
-  stroke-width: 1;
+  margin: 8px 0;
+  padding: 10px;
+  background: #334155;
+  color: white;
+  border: none;
   cursor: pointer;
 }
 
-.pref.yoto {
-  fill: #E69F00;   /* 与党：オレンジ */
+.map {
+  display: grid;
+  grid-template-columns: repeat(8, 60px);
+  gap: 4px;
+  margin-top: 10px;
 }
 
-.pref.yato {
-  fill: #0072B2;   /* 野党：青 */
+.pref {
+  width: 60px;
+  height: 40px;
+  background: #64748b;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
 }
 
-.pref.selected {
-  stroke-width: 3;
+.pref.you {
+  background: #22c55e;
 }
 
-.bar {
-  width: 100%;
-  height: 20px;
-  background: #ddd;
-  margin-top: 4px;
+.pref.ai {
+  background: #f97316;
 }
 
-#seatBar {
-  height: 100%;
-  background: #0072B2;
-  width: 0%;
+.seat-bar {
+  position: relative;
+  height: 40px;
+  background: #1f2933;
+  display: flex;
 }
+
+.you {
+  background: #22c55e;
+}
+
+.ai {
+  background: #f97316;
+}
+
+.majority {
+  position: absolute;
+  left: 50%;
+  top: -20px;
+  color: white;
+}
+
