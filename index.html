@@ -9,27 +9,29 @@
 
 <h1>衆院選シミュレーション（準備）</h1>
 
-<label>
-  政党名：
-  <input type="text" id="partyName" placeholder="○○党">
-</label>
+<div class="setup-form">
+  <label>
+    政党名：
+    <input type="text" id="partyName" placeholder="○○党">
+  </label>
 
-<h2>重点公約（1つ）</h2>
-<div class="policies">
-  <label><input type="radio" name="policy" value="economy"> 経済</label>
-  <label><input type="radio" name="policy" value="welfare"> 社会保障</label>
-  <label><input type="radio" name="policy" value="energy"> エネルギー</label>
-  <label><input type="radio" name="policy" value="agriculture"> 農業</label>
-  <label><input type="radio" name="policy" value="politics"> 政治とカネ</label>
+  <h2>重点公約（1つ）</h2>
+  <div class="policies">
+    <label><input type="radio" name="policy" value="economy"> 経済</label>
+    <label><input type="radio" name="policy" value="welfare"> 社会保障</label>
+    <label><input type="radio" name="policy" value="energy"> エネルギー</label>
+    <label><input type="radio" name="policy" value="agriculture"> 農業</label>
+    <label><input type="radio" name="policy" value="politics"> 政治とカネ</label>
+  </div>
+
+  <h2>プレイモード</h2>
+  <label><input type="radio" name="mode" value="two" checked> 2人プレイ（授業用）</label><br>
+  <label><input type="radio" name="mode" value="solo"> 1人プレイ（AIあり）</label><br>
+  <label><input type="radio" name="mode" value="hard"> 難しい（AI連合）</label>
+
+  <br><br>
+  <button id="startBtn" class="main-btn">ゲーム開始</button>
 </div>
-
-<h2>プレイモード</h2>
-<label><input type="radio" name="mode" value="two" checked> 2人プレイ（授業用）</label><br>
-<label><input type="radio" name="mode" value="solo"> 1人プレイ（AIあり）</label><br>
-<label><input type="radio" name="mode" value="hard"> 難しい（AI連合）</label>
-
-<br><br>
-<button id="startBtn">ゲーム開始</button>
 
 <script>
 document.getElementById("startBtn").onclick = () => {
