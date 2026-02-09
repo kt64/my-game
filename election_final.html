@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>衆院選決戦2026 - 最終完全版</title>
+    <style>
+        :root { --you: #00ff41; --ai: #ff4500; --neu: #334155; }
+        body { margin: 0; background: #020617; color: #f8fafc; font-family: 'Hiragino Sans', 'Meiryo', sans-serif; }
+        
+        /* メインレイアウト */
+        .container { display: flex; height: 85vh; padding: 10px; gap: 10px; }
+        
+        /* 地図エリア（重なり防止のため広めに確保） */
+        .map-area { flex: 2.5; position: relative; background: #0f172a; border: 2px solid #1e293b; border-radius: 15px; overflow: auto; padding: 20px; }
+        .japan-map { position: relative; width: 1000px; height: 850px; }
+
+        /* 都道府県パネル（大きく、重ならない） */
+        .pref { 
+            position: absolute; width: 85px; height: 50px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; border: 1px solid rgba(255,255,255,0.3);
+        }
+        .pref b { font-size: 14px; }
+        .pref span { font-size: 11px; opacity: 0.8; }
+        .pref.neutral { background: var(--neu); color: #fff; }
+        .pref.you { background: var(--you); color: #000; box-shadow: 0 0 20px var(--you); border-color: #fff; z-index: 10; }
+        .pref.ai { background: var(--ai); color: #fff; box-shadow: 0 0 20px var(--ai); border-color: #fff; z-index: 10; }
+
+        /* サイドバー */
+        .side { flex: 1; background: #1e293b; padding: 20px; display: flex; flex-direction: column; gap: 15px; border-radius: 15px; }
+        .turn-display { 
+            background: #facc15; color: #000; padding: 15px; text-align: center; 
+            border-radius: 10px; font-weight: 900; font-size: 1.6rem; border: 4px solid #000;
+        }
+        .time-display { font-size: 1.2rem; text-align: center; font-weight: bold; color: #facc15; }
+
+        /* 行動ボタン */
+        .actions button { 
+            width: 100%; padding: 12px; margin-bottom: 8px; background: #334155; color: white; 
+            border: 2px solid #475569; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.95rem;
+        }
+        .actions button:hover:not(:disabled) { background: #475569; border-color: #fbbf24; }
+        .actions button:disabled { opacity: 0.2; }
+
+        /* ニュース・不祥事テロップ */
+        .news-box { 
+            background: #000; padding: 15px; border-radius: 10px; flex-grow: 1; 
+            border: 2px solid #3b82f6; overflow-y: auto; font-family: monospace; font-size: 0.9rem; color: #10b981;
+        }
+        .breaking { color: #ff0000; font-weight: bold; animation: blink 0.8s infinite; display: block; margin-bottom: 5px; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+
+        /* 議席メーター */
+        .seat-bar-container { height: 15vh; background: #020617; padding: 10px 50px; border-top: 2px solid #334155; }
+        .seat-bar { height: 50px; background: #1e293b; display: flex; position: relative; border-radius: 25px; overflow: hidden; border: 3px solid #fff; }
+        .bar { transition: width 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28); height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; }
+        .bar.you { background: var(--you); color: #000; }
+        .bar.ai { background: var(--ai); color: #fff; }
+        .majority-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: yellow; z-index: 20; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="map-area">
+        <div id="japan-map" class="japan-map"></div>
+    </div>
+
+    <div class="side">
+        <div id="timeInfo" class="time-display">1日目：朝</div>
+        <div class="turn-display" id="turnIndicator">あなたの番です</div>
+        
+        <div class="actions" id="actionPanel">
+            <button onclick="setMode('speech')">🎤 街頭演説 (選んだ県を確実獲得)</button>
+            <button onclick="doSNS()">📱 SNS活動 (都市部1県をランダム獲得)</button>
+            <button onclick="doHome()">🏠 戸別訪問 (地方1県を確実獲得)</button>
+            <button onclick="doTV()">📺 テレビ出演 (全国のどこかを獲得)</button>
+            <button onclick="doFlyer()">📄 ビラ配布 (工業地域1県を獲得)</button>
+        </div>
+
+        <div class="news-box" id="newsFeed">
+            <div>> 選挙戦がスタートしました！全465議席を奪い合ってください。</div>
+        </div>
+    </div>
+</div>
+
+<div class="seat-bar-container">
+    <div style="display:flex; justify-content:space-between; margin:0 20px 5px; font-weight:bold;">
+        <span style="color:var(--you)">あなた党</span>
+        <span>過半数: 233</span>
+        <span style="color:var(--ai)">AI野党連合</span>
+    </div>
+    <div class="seat-bar">
+        <div id="barYou" class="bar you" style="width: 0%">0</div>
+        <div id="barNeutral" class="bar neutral" style="flex-grow: 1;">465</div>
+        <div id="barAI" class="bar ai" style="width: 0%">0</div>
+        <div class="majority-line"></div>
+    </div>
+</div>
+
+<script>
+// 重ならない座標データ（広範囲に分散）
+const PREF_DATA = {
+    "北海道": { x: 700, y: 20, s: 17, t: "rural" }, "青森": { x: 700, y: 130, s: 6, t: "rural" },
+    "岩手": { x: 800, y: 180, s: 6, t: "rural" }, "秋田": { x: 600, y: 180, s: 5, t: "rural" },
+    "山形": { x: 620, y: 260, s: 6, t: "rural" }, "宮城": { x: 780, y: 260, s: 10, t: "rural" },
+    "福島": { x: 700, y: 340, s: 9, t: "rural" }, "新潟": { x: 500, y: 230, s: 10, t: "rural" },
+    "富山": { x: 400, y: 230, s: 6, t: "rural" }, "石川": { x: 310, y: 230, s: 6, t: "rural" },
+    "福井": { x: 280, y: 310, s: 4, t: "rural" }, "長野": { x: 480, y: 340, s: 10, t: "rural" },
+    "群馬": { x: 580, y: 380, s: 10, t: "rural" }, "栃木": { x: 680, y: 420, s: 10, t: "rural" },
+    "茨城": { x: 780, y: 460, s: 13, t: "rural" }, "埼玉": { x: 600, y: 480, s: 28, t: "urban" },
+    "東京": { x: 680, y: 550, s: 30, t: "urban" }, "千葉": { x: 780, y: 560, s: 22, t: "urban" },
+    "神奈川": { x: 550, y: 600, s: 26, t: "urban" }, "山梨": { x: 480, y: 450, s: 4, t: "rural" },
+    "静岡": { x: 450, y: 550, s: 16, t: "urban" }, "愛知": { x: 380, y: 500, s: 15, t: "industry" },
+    "岐阜": { x: 380, y: 380, s: 10, t: "rural" }, "滋賀": { x: 300, y: 400, s: 4, t: "rural" },
+    "三重": { x: 330, y: 600, s: 8, t: "rural" }, "奈良": { x: 250, y: 550, s: 6, t: "rural" },
+    "和歌山": { x: 230, y: 650, s: 5, t: "rural" }, "京都": { x: 250, y: 420, s: 12, t: "urban" },
+    "大阪": { x: 180, y: 500, s: 19, t: "urban" }, "兵庫": { x: 150, y: 400, s: 12, t: "urban" },
+    "鳥取": { x: 100, y: 300, s: 4, t: "rural" }, "島根": { x: 10, y: 300, s: 4, t: "rural" },
+    "岡山": { x: 100, y: 420, s: 10, t: "rural" }, "広島": { x: 20, y: 420, s: 12, t: "industry" },
+    "山口": { x: 10, y: 520, s: 8, t: "rural" }, "徳島": { x: 150, y: 600, s: 6, t: "rural" },
+    "香川": { x: 80, y: 560, s: 6, t: "rural" }, "愛媛": { x: 10, y: 620, s: 8, t: "rural" },
+    "高知": { x: 80, y: 680, s: 4, t: "rural" }, "福岡": { x: 100, y: 150, s: 11, t: "urban" },
+    "佐賀": { x: 10, y: 150, s: 4, t: "rural" }, "長崎": { x: 10, y: 220, s: 8, t: "rural" },
+    "熊本": { x: 100, y: 250, s: 8, t: "rural" }, "大分": { x: 200, y: 200, s: 6, t: "rural" },
+    "宮崎": { x: 200, y: 100, s: 6, t: "rural" }, "鹿児島": { x: 100, y: 50, s: 9, t: "rural" },
+    "沖縄": { x: 10, y: 50, s: 4, t: "rural" }
+};
+
+let day = 1;
+let turnStep = 0; // 朝, 昼, 夜
+let isPlayerTurn = true;
+let actionsRemaining = 45;
+const status = {};
+let currentMode = null;
+
+function init() {
+    const map = document.getElementById("japan-map");
+    Object.keys(PREF_DATA).forEach(p => {
+        status[p] = "neutral";
+        const d = document.createElement("div");
+        d.className = "pref neutral";
+        d.id = `pref-${p}`;
+        d.innerHTML = `<b>${p}</b><span>(${PREF_DATA[p].s})</span>`;
+        d.style.left = PREF_DATA[p].x + "px";
+        d.style.top = PREF_DATA[p].y + "px";
+        d.onclick = () => handlePrefClick(p);
+        map.appendChild(d);
+    });
+    updateUI();
+}
+
+function log(msg, important = false) {
+    const box = document.getElementById("newsFeed");
+    const span = document.createElement("span");
+    if (important) span.className = "breaking";
+    span.innerHTML = `> ${msg}<br>`;
+    box.prepend(span);
+}
+
+function setMode(m) {
+    if(!isPlayerTurn) return;
+    currentMode = m;
+    log(`${m === 'speech' ? '演説する県を選んでください' : '準備中...'}`);
+}
+
+function handlePrefClick(p) {
+    if (!isPlayerTurn) return;
+    if (currentMode === "speech") {
+        status[p] = "you";
+        log(`${p}で演説。支持を獲得。`);
+        endPlayerTurn();
+    } else if (currentMode === "home") {
+        if (PREF_DATA[p].t === "rural") {
+            status[p] = "you";
+            log(`${p}の全戸訪問に成功！`);
+            endPlayerTurn();
+        } else {
+            alert("戸別訪問は「地方」の県のみ選べます。");
+        }
+    }
+}
+
+function doSNS() {
+    if (!isPlayerTurn) return;
+    const targets = Object.keys(status).filter(p => PREF_DATA[p].t === "urban" && status[p] !== "you");
+    if (targets.length > 0) {
+        const p = targets[Math.floor(Math.random() * targets.length)];
+        status[p] = "you";
+        log(`SNS戦略が成功！${p}を獲得。`);
+    } else {
+        log("SNSの効果はありませんでした。");
+    }
+    endPlayerTurn();
+}
+
+function doHome() {
+    if (!isPlayerTurn) return;
+    currentMode = "home";
+    log("訪問する地方の県（ rural ）を選んでください。");
+}
+
+function doTV() {
+    if (!isPlayerTurn) return;
+    const targets = Object.keys(status).filter(p => status[p] === "neutral");
+    if (targets.length > 0) {
+        const p = targets[Math.floor(Math.random() * targets.length)];
+        status[p] = "you";
+        log(`テレビ出演で${p}の支持が急増！`);
+    }
+    endPlayerTurn();
+}
+
+function doFlyer() {
+    if (!isPlayerTurn) return;
+    const targets = Object.keys(status).filter(p => PREF_DATA[p].t === "industry" && status[p] !== "you");
+    if (targets.length > 0) {
+        const p = targets[Math.floor(Math.random() * targets.length)];
+        status[p] = "you";
+        log(`ビラ配布で${p}の工場街を制圧！`);
+    }
+    endPlayerTurn();
+}
+
+function endPlayerTurn() {
+    isPlayerTurn = false;
+    currentMode = null;
+    actionsRemaining--;
+    updateUI();
+    
+    document.getElementById("turnIndicator").textContent = "相手の番です...";
+    document.getElementById("turnIndicator").style.background = "#ff4500";
+    document.getElementById("turnIndicator").style.color = "#fff";
+
+    setTimeout(aiTurn, 1000); // 1秒待って相手が行動
+}
+
+function aiTurn() {
+    const targets = Object.keys(status).filter(p => status[p] !== "ai");
+    if (targets.length > 0) {
+        const p = targets[Math.floor(Math.random() * targets.length)];
+        status[p] = "ai";
+        log(`相手候補が${p}で演説。支持を奪われました！`);
+    }
+
+    turnStep++;
+    if (turnStep > 2) {
+        turnStep = 0;
+        day++;
+    }
+
+    // 3日ごとに必ず不祥事ニュースが発生
+    if (day % 3 === 0 && turnStep === 0) {
+        triggerEvent();
+    }
+
+    if (actionsRemaining <= 0) {
+        finish();
+    } else {
+        isPlayerTurn = true;
+        document.getElementById("turnIndicator").textContent = "あなたの番です";
+        document.getElementById("turnIndicator").style.background = "#facc15";
+        document.getElementById("turnIndicator").style.color = "#000";
+        updateUI();
+    }
+}
+
+function triggerEvent() {
+    const isYou = Math.random() > 0.5;
+    const targets = Object.keys(status).filter(p => status[p] === (isYou ? "you" : "ai"));
+    if (targets.length > 0) {
+        const p = targets[Math.floor(Math.random() * targets.length)];
+        status[p] = isYou ? "ai" : "you";
+        log(`【速報】${isYou ? 'あなた' : '相手'}の党に不祥事！${p}の支持が離反！`, true);
+    }
+}
+
+function calculate(side) {
+    return Object.keys(status).reduce((total, p) => status[p] === side ? total + PREF_DATA[p].s : total, 0);
+}
+
+function updateUI() {
+    const you = calculate("you");
+    const ai = calculate("ai");
+    const neu = 465 - you - ai;
+    const stepNames = ["朝", "昼", "夜"];
+
+    document.getElementById("barYou").style.width = (you / 465 * 100) + "%";
+    document.getElementById("barYou").textContent = you;
+    document.getElementById("barAI").style.width = (ai / 465 * 100) + "%";
+    document.getElementById("barAI").textContent = ai;
+    
+    document.getElementById("timeInfo").textContent = `${day}日目：${stepNames[turnStep]} (残り${actionsRemaining}回)`;
+    
+    Object.keys(status).forEach(p => {
+        document.getElementById(`pref-${p}`).className = `pref ${status[p]}`;
+    });
+
+    const btns = document.getElementById("actionPanel").getElementsByTagName("button");
+    for(let b of btns) b.disabled = !isPlayerTurn;
+}
+
+function finish() {
+    const you = calculate("you");
+    alert(`選挙終了！あなたの獲得議席は ${you} でした。`);
+    location.reload();
+}
+
+window.onload = init;
+</script>
+</body>
+</html>
