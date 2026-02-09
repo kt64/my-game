@@ -1,44 +1,65 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>衆院選シミュレーター</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<div class="map-area">
+  <h2 id="partyDisplay"></h2>
 
-<div class="container">
+  <div id="japan-map" class="japan-map">
+    <!-- 北海道 -->
+    <div class="pref hokkaido" data-pref="北海道">北海道</div>
 
-  <!-- 左：地図 -->
-  <div class="map-area">
-    <h2 id="partyDisplay"></h2>
-    <div id="map" class="map"></div>
+    <!-- 東北 -->
+    <div class="pref aomori" data-pref="青森">青森</div>
+    <div class="pref iwate" data-pref="岩手">岩手</div>
+    <div class="pref miyagi" data-pref="宮城">宮城</div>
+    <div class="pref akita" data-pref="秋田">秋田</div>
+    <div class="pref yamagata" data-pref="山形">山形</div>
+    <div class="pref fukushima" data-pref="福島">福島</div>
+
+    <!-- 関東 -->
+    <div class="pref ibaraki">茨城</div>
+    <div class="pref tochigi">栃木</div>
+    <div class="pref gunma">群馬</div>
+    <div class="pref saitama">埼玉</div>
+    <div class="pref chiba">千葉</div>
+    <div class="pref tokyo">東京</div>
+    <div class="pref kanagawa">神奈川</div>
+
+    <!-- 中部 -->
+    <div class="pref niigata">新潟</div>
+    <div class="pref nagano">長野</div>
+    <div class="pref yamanashi">山梨</div>
+    <div class="pref shizuoka">静岡</div>
+    <div class="pref aichi">愛知</div>
+
+    <!-- 近畿 -->
+    <div class="pref mie">三重</div>
+    <div class="pref shiga">滋賀</div>
+    <div class="pref kyoto">京都</div>
+    <div class="pref osaka">大阪</div>
+    <div class="pref hyogo">兵庫</div>
+    <div class="pref nara">奈良</div>
+    <div class="pref wakayama">和歌山</div>
+
+    <!-- 中国 -->
+    <div class="pref tottori">鳥取</div>
+    <div class="pref shimane">島根</div>
+    <div class="pref okayama">岡山</div>
+    <div class="pref hiroshima">広島</div>
+    <div class="pref yamaguchi">山口</div>
+
+    <!-- 四国 -->
+    <div class="pref tokushima">徳島</div>
+    <div class="pref kagawa">香川</div>
+    <div class="pref ehime">愛媛</div>
+    <div class="pref kochi">高知</div>
+
+    <!-- 九州 -->
+    <div class="pref fukuoka">福岡</div>
+    <div class="pref saga">佐賀</div>
+    <div class="pref nagasaki">長崎</div>
+    <div class="pref kumamoto">熊本</div>
+    <div class="pref oita">大分</div>
+    <div class="pref miyazaki">宮崎</div>
+    <div class="pref kagoshima">鹿児島</div>
+    <div class="pref okinawa">沖縄</div>
   </div>
-
-  <!-- 右：操作 -->
-  <div class="side">
-    <h3 id="dayDisplay"></h3>
-
-    <button onclick="doAction('speech')">街頭演説</button>
-    <button onclick="doAction('sns')">SNS活動</button>
-    <button onclick="doAction('survey')">情勢調査</button>
-
-    <div class="status">
-      <p>議席：<span id="seats">200</span></p>
-      <p id="news"></p>
-    </div>
-  </div>
-
 </div>
-
-<!-- 下：議席バー -->
-<div class="seat-bar">
-  <div id="barYou" class="you"></div>
-  <div class="majority">233</div>
-  <div id="barAI" class="ai"></div>
-</div>
-
-<script src="game.js"></script>
-</body>
-</html>
 
