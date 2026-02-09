@@ -7,7 +7,7 @@
 </head>
 <body class="setup">
 
-<h1>衆院選シミュレーション</h1>
+<h1>衆院選シミュレーション（準備）</h1>
 
 <label>
   政党名：
@@ -23,12 +23,19 @@
   <label><input type="radio" name="policy" value="politics"> 政治とカネ</label>
 </div>
 
+<h2>プレイモード</h2>
+<label><input type="radio" name="mode" value="two" checked> 2人プレイ（授業用）</label><br>
+<label><input type="radio" name="mode" value="solo"> 1人プレイ（AIあり）</label><br>
+<label><input type="radio" name="mode" value="hard"> 難しい（AI連合）</label>
+
+<br><br>
 <button id="startBtn">ゲーム開始</button>
 
 <script>
 document.getElementById("startBtn").onclick = () => {
   const party = document.getElementById("partyName").value;
   const policy = document.querySelector("input[name=policy]:checked");
+  const mode = document.querySelector("input[name=mode]:checked").value;
 
   if (!party || !policy) {
     alert("政党名と公約を選んでください");
@@ -37,12 +44,11 @@ document.getElementById("startBtn").onclick = () => {
 
   localStorage.setItem("partyName", party);
   localStorage.setItem("policy", policy.value);
+  localStorage.setItem("mode", mode);
+
   location.href = "game.html";
 };
 </script>
 
 </body>
 </html>
-
-
-
