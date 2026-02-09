@@ -1,1 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>衆院選シミュレーター</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 左：地図 -->
+  <div class="map-area">
+    <h2 id="partyDisplay"></h2>
+    <div id="map" class="map"></div>
+  </div>
+
+  <!-- 右：操作 -->
+  <div class="side">
+    <h3 id="dayDisplay"></h3>
+
+    <button onclick="doAction('speech')">街頭演説</button>
+    <button onclick="doAction('sns')">SNS活動</button>
+    <button onclick="doAction('survey')">情勢調査</button>
+
+    <div class="status">
+      <p>議席：<span id="seats">200</span></p>
+      <p id="news"></p>
+    </div>
+  </div>
+
+</div>
+
+<!-- 下：議席バー -->
+<div class="seat-bar">
+  <div id="barYou" class="you"></div>
+  <div class="majority">233</div>
+  <div id="barAI" class="ai"></div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
 
