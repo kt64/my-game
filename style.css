@@ -102,3 +102,34 @@ body {
   background: #1e293b; padding: 50px; border-radius: 20px; text-align: center;
   border: 4px solid #22c55e;
 }
+/* 前回のCSSに以下を上書き・追加 */
+
+.header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    padding: 10px 20px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.bar.neutral {
+    background: #475569; /* まだ決まっていない議席 */
+}
+
+.turn-indicator {
+    background: #facc15;
+    color: #000;
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+/* 地図の微調整 */
+.japan-map {
+    transform: scale(0.9); /* 全体が見えない場合はここを調整 */
+    transform-origin: top left;
+}
