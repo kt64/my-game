@@ -8,31 +8,46 @@
 <body>
 
 <div class="container">
-
   <div class="map-area">
     <h2 id="partyDisplay"></h2>
-    <div id="japan-map" class="japan-map"></div>
+    <div id="japan-map" class="japan-map">
+      </div>
   </div>
 
   <div class="side">
-    <h3 id="dayDisplay"></h3>
+    <h3 id="dayDisplay">選挙戦 1日目 / 15日</h3>
+    
+    <div class="actions">
+      <button onclick="startSpeech()">🎤 街頭演説</button>
+      <button onclick="doSNS()">📱 SNS活動</button>
+      <button onclick="doSurvey()">📊 情勢調査</button>
+    </div>
 
-    <button onclick="startSpeech()">街頭演説</button>
-    <button onclick="doSNS()">SNS活動</button>
-    <button onclick="doSurvey()">情勢調査</button>
-
-    <p>議席：<span id="seats">0</span></p>
-    <p id="news"></p>
+    <div class="status-box">
+      <p>現在獲得見込み：<span id="seats" class="highlight">0</span> 議席</p>
+      <p id="news" class="news-feed">行動を選択してください</p>
+    </div>
   </div>
-
 </div>
 
-<div class="seat-bar">
-  <div id="barYou" class="you"></div>
-  <div class="majority">233</div>
-  <div id="barAI" class="ai"></div>
+<div class="seat-bar-container">
+  <div class="seat-bar">
+    <div id="barYou" class="bar you"></div>
+    <div class="majority-line">233</div>
+    <div id="barAI" class="bar ai"></div>
+  </div>
 </div>
 
+<div id="resultModal" class="modal">
+  <div class="modal-content">
+    <h1 id="resultTitle">選挙結果</h1>
+    <p id="resultText"></p>
+    <h2 id="finalSeats"></h2>
+    <button onclick="location.href='index.html'" class="main-btn">タイトルに戻る</button>
+  </div>
+</div>
+
+<script src="japan-data.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
