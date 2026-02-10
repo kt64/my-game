@@ -2,191 +2,162 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>衆院選シミュレーター2026</title>
+<title>選挙シミュレーション</title>
 <style>
-body{
-  margin:0;
-  font-family:"Hiragino Sans","Meiryo",sans-serif;
-  background:#020617;
-  color:#f8fafc;
+body {
+  font-family: sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 0;
 }
 
-/* 共通 */
-button{
-  padding:12px 20px;
-  font-size:1rem;
-  border:none;
-  border-radius:10px;
-  background:#facc15;
-  font-weight:bold;
-  cursor:pointer;
-  margin-bottom:6px;
+header {
+  background: #1e3a8a;
+  color: white;
+  padding: 10px;
+  text-align: center;
 }
 
-/* 準備画面 */
-#setup{ padding:40px; }
-.card{
-  background:#0f172a;
-  padding:20px;
-  margin-bottom:20px;
-  border-radius:10px;
+#status {
+  padding: 10px;
+  background: white;
+  display: flex;
+  justify-content: space-around;
 }
-input{ padding:10px; width:100%; font-size:1rem; }
-.policies label{ display:block; margin:4px 0; }
 
-/* ゲーム画面 */
-#game{ display:none; }
-.map{
-  position:relative;
-  width:450px;
-  height:300px;
+#actions button {
+  margin: 5px;
+  padding: 10px;
+  font-size: 14px;
 }
-.pref{
-  position:absolute;
-  width:80px;
-  height:50px;
-  border-radius:8px;
-  text-align:center;
-  cursor:pointer;
-  font-weight:bold;
-  border:2px solid #fff;
-  line-height:50px;
-}
-.neutral{ background:#334155; color:#e5e7eb; }
-.you{ background:#f59e0b; color:#000; }
-.ai{ background:#2563eb; color:#fff; }
 
-#side{ width:300px; padding:20px; }
-#news div{ font-size:0.9rem; margin-bottom:4px; }
+#log {
+  background: #fff;
+  margin: 10px;
+  padding: 10px;
+  height: 160px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+}
+
+#map {
+  margin: 10px;
+  background: white;
+  border: 1px solid #ccc;
+}
 </style>
 </head>
+
 <body>
 
-<!-- 準備画面 -->
-<div id="setup">
-  <h1>衆院選シミュレーター2026</h1>
+<header>
+<h1>衆議院選挙シミュレーション</h1>
+</header>
 
-  <div class="card">
-    <label>あなたの政党名</label>
-    <input id="partyName" placeholder="例：未来日本党">
-  </div>
-
-  <div class="card">
-    <p>公約を5つ選んでください</p>
-    <div class="policies">
-      <label><input type="checkbox" value="社会保障"> 社会保障</label>
-      <label><input type="checkbox" value="経済成長"> 経済成長</label>
-      <label><input type="checkbox" value="エネルギー"> エネルギー</label>
-      <label><input type="checkbox" value="農業"> 農業</label>
-      <label><input type="checkbox" value="外国人政策"> 外国人政策</label>
-      <label><input type="checkbox" value="政治とカネ"> 政治とカネ</label>
-      <label><input type="checkbox" value="教育"> 教育</label>
-      <label><input type="checkbox" value="防衛"> 防衛</label>
-    </div>
-  </div>
-
-  <button onclick="startGame()">ゲーム開始</button>
+<div id="status">
+  <div>ターン: <span id="turn">1</span>/20</div>
+  <div>支持率: <span id="support">30</span>%</div>
+  <div>議席: <span id="seats">0</span>/465</div>
 </div>
 
-<!-- ゲーム画面 -->
-<div id="game">
-  <h2 id="title"></h2>
-  <div style="display:flex;">
-    <div class="map" id="map"></div>
-    <div id="side">
-      <h3>行動</h3>
-      <button onclick="speech()">街頭演説</button>
-      <button onclick="sns()">SNS戦略</button>
-      <button onclick="home()">戸別訪問</button>
-      <button onclick="tv()">テレビ出演</button>
-      <button onclick="flyer()">政策ビラ</button>
+<div id="actions">
+  <button onclick="actionSpeech()">街頭演説</button>
+  <button onclick="actionSNS()">SNS発信</button>
+  <button onclick="actionSurvey()">情勢調査</button>
+  <button onclick="actionScandal()">不祥事対応</button>
+  <button onclick="actionPolicy()">政策発表</button>
+</div>
 
-      <h3>ニュース</h3>
-      <div id="news"></div>
+<div id="log"></div>
 
-      <h3>議席</h3>
-      <div id="seats"></div>
-    </div>
-  </div>
+<div id="map">
+<svg viewBox="0 0 300 150" width="100%" height="200">
+  <rect x="10" y="10" width="80" height="50" fill="#e5e7eb" stroke="#000"/>
+  <rect x="110" y="10" width="80" height="50" fill="#e5e7eb" stroke="#000"/>
+  <rect x="210" y="10" width="80" height="50" fill="#e5e7eb" stroke="#000"/>
+  <rect x="60" y="80" width="80" height="50" fill="#e5e7eb" stroke="#000"/>
+  <rect x="160" y="80" width="80" height="50" fill="#e5e7eb" stroke="#000"/>
+</svg>
 </div>
 
 <script>
-/* ====== ゲームデータ ====== */
-const PREFS = {
-  東京:30, 神奈川:26, 大阪:19, 愛知:15, 北海道:17,
-  福岡:11, 埼玉:28, 千葉:22, 兵庫:12, 京都:12
-};
+let turn = 1;
+let support = 30;
+let seats = 0;
+let scandal = false;
 
-const status = {};
-let party = "あなた党";
+function log(msg) {
+  const logDiv = document.getElementById("log");
+  logDiv.innerHTML += msg + "<br>";
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
 
-/* ====== 画面遷移 ====== */
-function startGame(){
-  const name = document.getElementById("partyName").value || "あなた党";
-  const checked = [...document.querySelectorAll("input:checked")].map(c=>c.value);
-  if(checked.length !== 5){
-    alert("公約は5つ選んでください");
-    return;
+function nextTurn() {
+  turn++;
+  document.getElementById("turn").textContent = turn;
+
+  // 不祥事ランダム発生
+  if (Math.random() < 0.15) {
+    scandal = true;
+    log("⚠️ 不祥事が発覚しました！");
+    support -= 3;
   }
-  party = name;
-  document.getElementById("setup").style.display = "none";
-  document.getElementById("game").style.display = "block";
-  initGame();
-}
 
-/* ====== 初期化 ====== */
-function initGame(){
-  document.getElementById("title").textContent = party + " 選挙戦";
-  const map = document.getElementById("map");
-  map.innerHTML = "";
-  Object.keys(PREFS).forEach((p,i)=>{
-    status[p] = "neutral";
-    const d = document.createElement("div");
-    d.className = "pref neutral";
-    d.textContent = p;
-    d.style.left = (i%5)*90+"px";
-    d.style.top = Math.floor(i/5)*70+"px";
-    d.onclick = ()=>capture(p);
-    map.appendChild(d);
-  });
-  update();
-}
-
-/* ====== ゲーム処理 ====== */
-function capture(p){
-  status[p] = "you";
-  aiTurn();
-  update();
-}
-
-function aiTurn(){
-  const targets = Object.keys(status);
-  const p = targets[Math.floor(Math.random()*targets.length)];
-  status[p] = "ai";
-}
-
-function update(){
-  let you = 0, ai = 0;
-  Object.keys(status).forEach(p=>{
-    if(status[p]==="you") you+=PREFS[p];
-    if(status[p]==="ai") ai+=PREFS[p];
-  });
-  if(you+ai>465){
-    ai = 465-you;
-    if(ai<0) ai=0;
+  // 終盤ニュース
+  if (turn >= 16) {
+    log("📰 終盤情勢ニュース：支持率が議席に直結し始めています");
   }
-  document.getElementById("seats").textContent = `${party}: ${you} / 相手党: ${ai}`;
+
+  calculateSeats();
 }
 
-function log(msg){
-  document.getElementById("news").innerHTML = `<div>${msg}</div>` + document.getElementById("news").innerHTML;
+function calculateSeats() {
+  const districtSeats = Math.floor(289 * (support / 100));
+  const prSeats = Math.floor(176 * (support / 100));
+  seats = Math.min(465, districtSeats + prSeats);
+  document.getElementById("seats").textContent = seats;
 }
 
-function speech(){ log("街頭演説を行いました"); }
-function sns(){ log("SNSで支持拡大"); }
-function home(){ log("戸別訪問を実施"); }
-function tv(){ log("テレビ出演"); }
-function flyer(){ log("政策ビラ配布"); }
+function updateSupport(val) {
+  support = Math.max(0, Math.min(100, support + val));
+  document.getElementById("support").textContent = support;
+}
+
+function actionSpeech() {
+  log("📣 街頭演説を行った");
+  updateSupport(2);
+  nextTurn();
+}
+
+function actionSNS() {
+  log("📱 SNSで発信した");
+  updateSupport(1);
+  nextTurn();
+}
+
+function actionSurvey() {
+  log(`📊 情勢調査：現在の支持率は ${support}%`);
+  nextTurn();
+}
+
+function actionScandal() {
+  if (scandal) {
+    log("🧯 不祥事対応を行った");
+    scandal = false;
+    updateSupport(2);
+  } else {
+    log("特に対応すべき不祥事はありません");
+  }
+  nextTurn();
+}
+
+function actionPolicy() {
+  log("📜 新政策を発表した");
+  updateSupport(3);
+  nextTurn();
+}
 </script>
+
 </body>
 </html>
+
