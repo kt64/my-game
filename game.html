@@ -2,185 +2,314 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>衆院選シミュレーター2026</title>
+<title>衆院選シミュレーター2026 - 47都道府県完全版</title>
 <style>
 body{
   margin:0;
   font-family:"Hiragino Sans","Meiryo",sans-serif;
   background:#020617;
   color:#f8fafc;
+  overflow: hidden;
 }
+h1,h2,h3{margin:0 0 10px 0}
 button{
-  padding:10px 14px;
+  padding:12px 16px;
+  margin:5px 0;
   border:none;
   border-radius:8px;
   background:#facc15;
+  color: #000;
   font-weight:bold;
   cursor:pointer;
+  width: 100%;
+  text-align: left;
 }
-input{padding:8px;width:100%}
+button:hover:not(:disabled){ background: #fde047; }
+button:disabled{opacity:.3;cursor:not-allowed}
 
-.screen{display:none;padding:30px}
+.screen{display:none;padding:20px; height: 100vh; box-sizing: border-box;}
 .screen.active{display:block}
 
-.card{
-  background:#0f172a;
-  padding:20px;
-  border-radius:12px;
-  margin-bottom:20px;
-}
+.card{ background:#0f172a; padding:20px; border-radius:12px; margin-bottom:15px; border: 1px solid #1e293b; }
+input{padding:10px; width:90%; border-radius: 5px; border: none; margin-top: 10px;}
 
-.layout{display:flex;gap:20px}
+.layout{display:flex; gap:20px; height: 80vh;}
 
-/* 地図 */
-.map{
-  position:relative;
-  width:1100px;
-  height:650px;
-  background:#020617;
+/* 地図エリア */
+.map-container {
+  flex: 1;
+  background: #020617;
+  position: relative;
+  overflow: auto;
+  border: 2px solid #1e293b;
+  border-radius: 12px;
 }
+.map{ position:relative; width:950px; height:800px; padding: 20px; }
 .pref{
   position:absolute;
-  width:70px;
-  height:40px;
-  border-radius:8px;
-  border:2px solid #fff;
+  width:75px;
+  height:50px;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,0.3);
   text-align:center;
   font-size:.75rem;
-  line-height:40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   cursor:pointer;
+  transition: 0.3s;
 }
-.neutral{background:#334155}
-.you{background:#f59e0b;color:#000}
-.ai{background:#2563eb}
+.neutral{background:#334155; color: #94a3b8;}
+.you{background:#22c55e; color:#000; font-weight: bold; box-shadow: 0 0 15px #22c55e; border-color: #fff; z-index: 10;}
+.ai{background:#ef4444; color:#fff; font-weight: bold; box-shadow: 0 0 15px #ef4444; border-color: #fff; z-index: 10;}
 
-.side{width:320px}
-.news{font-size:.85rem}
-.bar{
-  height:14px;
-  background:#334155;
-  border-radius:8px;
-  overflow:hidden;
+/* 右パネル */
+.side{width:350px; display: flex; flex-direction: column; gap: 10px;}
+.turn-indicator { 
+    background: #facc15; color: #000; padding: 10px; border-radius: 8px; 
+    text-align: center; font-weight: 900; font-size: 1.2rem;
 }
-.bar-inner{
-  height:100%;
-  background:#22c55e;
+.news-box {
+  background: #000;
+  border: 1px solid #3b82f6;
+  padding: 10px;
+  font-size: .85rem;
+  height: 150px;
+  overflow-y: auto;
+  color: #34d399;
+  font-family: monospace;
 }
+.breaking { color: #ff4444; font-weight: bold; animation: blink 0.8s infinite; }
+@keyframes blink { 50% { opacity: 0.3; } }
+
+.seats-display { font-size: 1.1rem; font-weight: bold; border-top: 2px solid #334155; padding-top: 10px; }
 </style>
 </head>
 <body>
 
-<!-- 準備画面（ここだけ） -->
 <div id="setup" class="screen active">
-  <h1>衆院選シミュレーター2026</h1>
-
+  <h1>衆院選2026：選挙事務所</h1>
   <div class="card">
-    <label>あなたの政党名</label>
-    <input id="partyName" placeholder="例：未来日本党">
+    <h3>1. 党名を決める</h3>
+    <input id="partyName" placeholder="例：未来日本党" value="あなた党">
   </div>
-
   <div class="card">
-    <p>公約を5つ選んでください</p>
-    <label><input type="checkbox"> 社会保障</label><br>
-    <label><input type="checkbox"> 経済成長</label><br>
-    <label><input type="checkbox"> 教育</label><br>
-    <label><input type="checkbox"> 防衛</label><br>
-    <label><input type="checkbox"> エネルギー</label><br>
-    <label><input type="checkbox"> 農業</label><br>
-    <label><input type="checkbox"> 政治とカネ</label><br>
-    <label><input type="checkbox"> 外国人政策</label>
+    <h3>2. 主要公約（5つ選択）</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+      <label><input type="checkbox" value="社会保障"> 社会保障</label>
+      <label><input type="checkbox" value="経済成長"> 経済成長</label>
+      <label><input type="checkbox" value="教育無償化"> 教育無償化</label>
+      <label><input type="checkbox" value="防衛力強化"> 防衛力強化</label>
+      <label><input type="checkbox" value="脱炭素"> 脱炭素</label>
+      <label><input type="checkbox" value="減税"> 減税</label>
+      <label><input type="checkbox" value="地方創生"> 地方創生</label>
+      <label><input type="checkbox" value="政治改革"> 政治改革</label>
+    </div>
   </div>
-
-  <button onclick="startGame()">ゲーム開始</button>
+  <button onclick="startGame()" style="text-align:center; font-size:1.2rem; background:#22c55e; color:white;">選挙戦を開始する！</button>
 </div>
 
-<!-- ゲーム画面（開始後のみ） -->
 <div id="game" class="screen">
-  <h2 id="title"></h2>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <h2 id="title"></h2>
+    <div id="dayDisplay" style="font-weight:bold; color:#facc15;"></div>
+  </div>
 
   <div class="layout">
-    <div class="map" id="map"></div>
+    <div class="map-container">
+        <div class="map" id="map"></div>
+    </div>
 
     <div class="side">
-      <h3>行動</h3>
-      <button onclick="action()">行動する</button>
+      <div id="turnIndicator" class="turn-indicator">あなたの番です</div>
+      
+      <div id="actionButtons">
+        <button onclick="prepareAction('speech')">🎤 街頭演説（県を選択）</button>
+        <button onclick="runDirectAction('sns')">📱 SNS戦略（都市部を狙う）</button>
+        <button onclick="runDirectAction('home')">🏠 戸別訪問（地方を固める）</button>
+        <button onclick="runDirectAction('tv')">📺 テレビ出演（中立を動かす）</button>
+        <button onclick="runDirectAction('flyer')">📄 政策ビラ（全国へ配布）</button>
+      </div>
 
-      <h3>支持率</h3>
-      <div class="bar"><div id="trendBar" class="bar-inner"></div></div>
+      <div class="news-box" id="news">
+        <div>> 公示日。いよいよスタートです。</div>
+      </div>
 
-      <h3>ニュース</h3>
-      <div id="news" class="news"></div>
-
-      <h3>議席</h3>
-      <div id="seats"></div>
+      <div class="seats-display">
+        <div id="seatCounts"></div>
+        <div style="font-size:0.8rem; color:#94a3b8; margin-top:5px;">過半数：233 / 全465議席</div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-const TOTAL_SEATS = 465;
+/* 47都道府県データ（重ならないよう配置） */
+const PREFS_DATA = {
+    "北海道": {x:750, y:20, s:17, t:"rural"}, "青森": {x:750, y:120, s:6, t:"rural"},
+    "岩手": {x:840, y:160, s:6, t:"rural"}, "秋田": {x:660, y:160, s:5, t:"rural"},
+    "山形": {x:680, y:240, s:6, t:"rural"}, "宮城": {x:820, y:240, s:10, t: "rural"},
+    "福島": {x:750, y:310, s:9, t:"rural"}, "新潟": {x:570, y:210, s:10, t:"rural"},
+    "富山": {x:480, y:210, s:6, t:"rural"}, "石川": {x:390, y:210, s:6, t:"rural"},
+    "福井": {x:330, y:270, s:4, t:"rural"}, "長野": {x:500, y:310, s:10, t:"rural"},
+    "群馬": {x:600, y:330, s:10, t:"rural"}, "栃木": {x:680, y:380, s:10, t:"rural"},
+    "茨城": {x:780, y:420, s:13, t:"rural"}, "埼玉": {x:600, y:440, s:28, t:"urban"},
+    "東京": {x:680, y:520, s:30, t:"urban"}, "千葉": {x:790, y:530, s:22, t:"urban"},
+    "神奈川": {x:570, y:570, s:26, t:"urban"}, "山梨": {x:490, y:420, s:4, t:"rural"},
+    "静岡": {x:470, y:530, s:16, t:"urban"}, "愛知": {x:390, y:470, s:15, t:"urban"},
+    "岐阜": {x:400, y:370, s:10, t:"rural"}, "滋賀": {x:320, y:350, s:4, t:"rural"},
+    "三重": {x:340, y:580, s:8, t:"rural"}, "奈良": {x:280, y:510, s:6, t:"rural"},
+    "和歌山": {x:230, y:630, s:5, t:"rural"}, "京都": {x:260, y:370, s:12, t:"urban"},
+    "大阪": {x:190, y:460, s:19, t:"urban"}, "兵庫": {x:170, y:360, s:12, t:"urban"},
+    "鳥取": {x:100, y:290, s:4, t:"rural"}, "島根": {x:10, y:290, s:4, t:"rural"},
+    "岡山": {x:100, y:370, s:10, t:"rural"}, "広島": {x:10, y:370, s:12, t:"rural"},
+    "山口": {x:10, y:470, s:8, t:"rural"}, "徳島": {x:150, y:580, s:6, t:"rural"},
+    "香川": {x:80, y:540, s:6, t:"rural"}, "愛媛": {x:10, y:580, s:8, t:"rural"},
+    "高知": {x:80, y:640, s:4, t:"rural"}, "福岡": {x:100, y:150, s:11, t:"urban"},
+    "佐賀": {x:10, y:140, s:4, t:"rural"}, "長崎": {x:10, y:210, s:8, t:"rural"},
+    "熊本": {x:100, y:250, s:8, t:"rural"}, "大分": {x:190, y:210, s:6, t:"rural"},
+    "宮崎": {x:190, y:120, s:6, t:"rural"}, "鹿児島": {x:100, y:50, s:9, t:"rural"},
+    "沖縄": {x:10, y:40, s:4, t:"rural"}
+};
 
-/* 47都道府県（簡略配置） */
-const PREFS = [
-"北海道","青森","岩手","宮城","秋田","山形","福島",
-"茨城","栃木","群馬","埼玉","千葉","東京","神奈川",
-"新潟","富山","石川","福井","山梨","長野",
-"岐阜","静岡","愛知","三重",
-"滋賀","京都","大阪","兵庫","奈良","和歌山",
-"鳥取","島根","岡山","広島","山口",
-"徳島","香川","愛媛","高知",
-"福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄"
-];
-
-let status={},support=50,partyName="";
+let status = {}, turnsLeft = 45, day = 1, isPlayerTurn = true, partyName = "", activeMode = null;
 
 function startGame(){
-  partyName=document.getElementById("partyName").value||"あなた党";
+  const checks = document.querySelectorAll("input:checked");
+  if(checks.length !== 5){ alert("公約は5つ選んでください"); return; }
+  partyName = document.getElementById("partyName").value || "あなた党";
+  
   document.getElementById("setup").classList.remove("active");
   document.getElementById("game").classList.add("active");
-  document.getElementById("title").textContent=partyName+" 選挙戦";
-  drawMap();
-  update();
+  document.getElementById("title").textContent = partyName + " 全勝への道";
+  
+  initMap();
+  updateUI();
 }
 
-function drawMap(){
-  const map=document.getElementById("map");
-  map.innerHTML="";
-  PREFS.forEach((p,i)=>{
-    status[p]="neutral";
-    const d=document.createElement("div");
-    d.className="pref neutral";
-    d.textContent=p;
-    d.style.left=(i%10)*100+"px";
-    d.style.top=Math.floor(i/10)*60+"px";
-    d.onclick=()=>{status[p]="you";update()};
+function initMap(){
+  const map = document.getElementById("map");
+  map.innerHTML = "";
+  Object.keys(PREFS_DATA).forEach(name => {
+    status[name] = "neutral";
+    const p = PREFS_DATA[name];
+    const d = document.createElement("div");
+    d.className = "pref neutral";
+    d.id = `pref-${name}`;
+    d.style.left = p.x + "px";
+    d.style.top = p.y + "px";
+    d.innerHTML = `<span>${name}</span><span style="font-size:0.6rem;">(${p.s})</span>`;
+    d.onclick = () => onPrefClick(name);
     map.appendChild(d);
   });
 }
 
-function action(){
-  support+=Math.floor(Math.random()*5)-2;
-  log("選挙活動を実施");
-  update();
+function prepareAction(mode){
+    if(!isPlayerTurn) return;
+    activeMode = mode;
+    log("地図からターゲットの県をタップしてください。");
 }
 
-function update(){
-  const you=Math.round(TOTAL_SEATS*(support/100));
-  const ai=TOTAL_SEATS-you;
-  document.getElementById("seats").textContent=
-    `${partyName}: ${you} / 相手党: ${ai}`;
-  document.getElementById("trendBar").style.width=
-    Math.max(0,Math.min(100,support))+"%";
-
-  Object.keys(status).forEach(p=>{
-    const el=[...document.querySelectorAll(".pref")].find(e=>e.textContent===p);
-    el.className="pref "+status[p];
-  });
+function onPrefClick(name){
+    if(!isPlayerTurn || activeMode !== 'speech') return;
+    status[name] = "you";
+    log(`${name}で熱のこもった演説を行い、支持を固めました！`);
+    endPlayerTurn();
 }
 
-function log(msg){
-  const n=document.getElementById("news");
-  n.innerHTML="<div>"+msg+"</div>"+n.innerHTML;
+function runDirectAction(type){
+    if(!isPlayerTurn) return;
+    let target = "";
+    if(type === 'sns'){
+        const list = Object.keys(status).filter(p => PREFS_DATA[p].t === 'urban' && status[p] !== 'you');
+        target = list[Math.floor(Math.random() * list.length)];
+        log(`SNSでのバズが発生！ ${target}の支持が急増。`);
+    } else if(type === 'home'){
+        const list = Object.keys(status).filter(p => PREFS_DATA[p].t === 'rural' && status[p] !== 'you');
+        target = list[Math.floor(Math.random() * list.length)];
+        log(`地道な戸別訪問が功を奏し、${target}を確保。`);
+    } else {
+        const list = Object.keys(status).filter(p => status[p] === 'neutral');
+        target = list[Math.floor(Math.random() * list.length)] || Object.keys(status)[0];
+        log(`${type === 'tv' ? '全国放送' : 'ビラ配布'}で${target}に名前が売れました。`);
+    }
+    if(target) status[target] = "you";
+    endPlayerTurn();
+}
+
+function endPlayerTurn(){
+    activeMode = null;
+    isPlayerTurn = false;
+    turnsLeft--;
+    updateUI();
+    
+    document.getElementById("turnIndicator").textContent = "相手（AI）が行動中...";
+    document.getElementById("turnIndicator").style.background = "#ef4444";
+    document.getElementById("turnIndicator").style.color = "#fff";
+    
+    setTimeout(aiTurn, 1000);
+}
+
+function aiTurn(){
+    const targets = Object.keys(status).filter(p => status[p] !== 'ai');
+    if(targets.length){
+        const p = targets[Math.floor(Math.random() * targets.length)];
+        status[p] = "ai";
+        log(`【警告】相手候補が${p}に乗り込み、支持を奪われました。`);
+    }
+
+    // ランダム不祥事イベント
+    if(Math.random() < 0.15){
+        triggerScandal();
+    }
+
+    if(turnsLeft % 3 === 0) day++;
+    isPlayerTurn = true;
+    document.getElementById("turnIndicator").textContent = "あなたの番です";
+    document.getElementById("turnIndicator").style.background = "#facc15";
+    document.getElementById("turnIndicator").style.color = "#000";
+    updateUI();
+}
+
+function triggerScandal(){
+    const myPrefs = Object.keys(status).filter(p => status[p] === 'you');
+    if(myPrefs.length){
+        const p = myPrefs[Math.floor(Math.random() * myPrefs.length)];
+        status[p] = "ai"; // 支持が奪われる
+        log(`【速報】${partyName}に不祥事！${p}の情勢が不利に。`, true);
+    }
+}
+
+function updateUI(){
+    let youSeats = 0, aiSeats = 0;
+    Object.keys(status).forEach(name => {
+        const d = document.getElementById(`pref-${name}`);
+        d.className = `pref ${status[name]}`;
+        if(status[name] === "you") youSeats += PREFS_DATA[name].s;
+        if(status[name] === "ai") aiSeats += PREFS_DATA[name].s;
+    });
+
+    document.getElementById("seatCounts").innerHTML = 
+        `<span style="color:#22c55e">${partyName}: ${youSeats}</span><br>` +
+        `<span style="color:#ef4444">相手党連合: ${aiSeats}</span>`;
+    
+    document.getElementById("dayDisplay").textContent = `${day}日目 (残り${turnsLeft}行動)`;
+
+    const buttons = document.querySelectorAll("#actionButtons button");
+    buttons.forEach(b => b.disabled = !isPlayerTurn);
+
+    if(turnsLeft <= 0){
+        alert(`投開票終了！\n${partyName}の獲得議席：${youSeats}\n${youSeats >= 233 ? "過半数達成！歴史的な勝利です！" : "残念ながら過半数に届きませんでした。"}`);
+        location.reload();
+    }
+}
+
+function log(msg, isBreaking = false){
+  const n = document.getElementById("news");
+  const d = document.createElement("div");
+  if(isBreaking) d.className = "breaking";
+  d.innerHTML = (isBreaking ? "【速報】" : "> ") + msg;
+  n.prepend(d);
 }
 </script>
 </body>
