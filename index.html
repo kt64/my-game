@@ -1,172 +1,151 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>衆院選2026：完全決戦版</title>
-    <style>
-        :root { --bg: #020617; --card: #1e293b; --acc: #facc15; --p1: #22c55e; --p2: #3b82f6; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: #f8fafc; }
-        .screen { display: none; padding: 20px; }
-        .screen.active { display: block; }
-        
-        /* 議席メーター（ここが新機能！） */
-        .meter-wrap { width: 100%; height: 40px; background: #334155; border-radius: 20px; margin: 10px 0; position: relative; overflow: hidden; display: flex; border: 2px solid #fff; }
-        .m-bar { height: 100%; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        .m-p1 { background: var(--p1); }
-        .m-p2 { background: var(--p2); }
-        .center-line { position: absolute; left: 50%; top: 0; width: 4px; height: 100%; background: #fff; z-index: 5; }
+<meta charset="UTF-8">
+<title>衆院選2026 教育用シミュレーター</title>
+<style>
+:root{
+  --bg:#020617;--card:#1e293b;--acc:#facc15;
+  --p1:#22c55e;--p2:#3b82f6
+}
+body{margin:0;font-family:sans-serif;background:var(--bg);color:#f8fafc}
+.screen{display:none;padding:20px}
+.screen.active{display:block}
 
-        /* 地図レイアウト（整理しました） */
-        .game-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
-        .map-section { background: #000; padding: 15px; border-radius: 15px; border: 1px solid #334155; }
-        .region-block { margin-bottom: 15px; }
-        .region-title { color: var(--acc); font-size: 0.8rem; border-bottom: 1px solid #334155; margin-bottom: 8px; }
-        .pref-container { display: flex; flex-wrap: wrap; gap: 8px; }
-        
-        .p-chip { padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; background: #334155; cursor: pointer; border: 1px solid transparent; }
-        .p-chip.p1 { background: var(--p1); color: #000; font-weight: bold; }
-        .p-chip.p2 { background: var(--p2); color: #fff; font-weight: bold; }
+/* 議席メーター */
+.meter{height:36px;background:#334155;border-radius:18px;overflow:hidden;
+display:flex;position:relative;border:2px solid #fff}
+.m1{background:var(--p1)}
+.m2{background:var(--p2)}
+.mid{position:absolute;left:50%;width:4px;height:100%;background:#fff}
 
-        /* サイドメニュー */
-        .act-btn { width: 100%; padding: 12px; margin: 4px 0; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 8px; cursor: pointer; text-align: left; }
-        .act-btn:hover { background: #334155; border-color: var(--acc); }
-        .turn-box { padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; }
-    </style>
+/* レイアウト */
+.grid{display:grid;grid-template-columns:1fr 320px;gap:20px}
+
+/* 地図 */
+.map{background:#000;padding:15px;border-radius:15px}
+.region{margin-bottom:15px}
+.r-title{color:var(--acc);font-size:.85rem;border-bottom:1px solid #334155}
+.prefs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pref{padding:6px 10px;border-radius:6px;background:#334155;font-size:.75rem;
+cursor:pointer}
+.pref.p1{background:var(--p1);color:#000;font-weight:bold}
+.pref.p2{background:var(--p2);font-weight:bold}
+
+/* 右 */
+.btn{width:100%;padding:10px;margin:4px 0;background:#1e293b;
+border:1px solid #475569;border-radius:8px;color:#fff;text-align:left}
+.btn:hover{border-color:var(--acc)}
+.log{height:120px;overflow:auto;background:#000;padding:8px;font-size:.8rem}
+.turn{padding:10px;text-align:center;font-weight:bold;border-radius:10px}
+</style>
 </head>
 <body>
 
 <div id="setup" class="screen active">
-    <div style="max-width:500px; margin:100px auto; background:var(--card); padding:30px; border-radius:20px; text-align:center;">
-        <h1 style="color:var(--acc)">衆院選2026：決戦モード</h1>
-        <input type="text" id="p1" value="与党" style="width:80%; padding:10px; margin:10px;">
-        <input type="text" id="p2" value="野党" style="width:80%; padding:10px; margin:10px;">
-        <button onclick="start()" style="width:80%; padding:15px; background:var(--p1); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ゲーム開始</button>
-    </div>
+  <div style="max-width:480px;margin:80px auto;background:var(--card);padding:30px;border-radius:20px;text-align:center">
+    <h1 style="color:var(--acc)">衆院選2026</h1>
+    <input id="p1" value="与党" style="width:80%;padding:10px;margin:8px">
+    <input id="p2" value="野党" style="width:80%;padding:10px;margin:8px">
+    <button onclick="start()" style="width:80%;padding:14px;background:var(--p1);border:none;border-radius:10px;font-weight:bold">
+      ゲーム開始
+    </button>
+  </div>
 </div>
 
 <div id="game" class="screen">
-    <div class="meter-wrap">
-        <div id="bar1" class="m-bar m-p1" style="width:0%"></div>
-        <div id="bar2" class="m-bar m-p2" style="width:0%"></div>
-        <div class="center-line"></div>
-    </div>
+  <div class="meter">
+    <div id="bar1" class="m1" style="width:0%"></div>
+    <div id="bar2" class="m2" style="width:0%"></div>
+    <div class="mid"></div>
+  </div>
 
-    <div class="game-grid">
-        <div class="map-section" id="mapMain"></div>
-        <div class="side">
-            <div id="turnDisplay" class="turn-box"></div>
-            <button class="act-btn" onclick="play('s')">🎤 街頭演説 (中立県を1つ獲得)</button>
-            <button class="act-btn" onclick="play('v')">📱 SNS戦略 (大都市を1つ奪取)</button>
-            <button class="act-btn" onclick="play('h')">📺 全国放送 (比例票を獲得)</button>
-            <button class="act-btn" onclick="play('g')">🏠 地盤固め (小選挙区を補強)</button>
-            <button class="act-btn" onclick="play('x')">🔥 スキャンダル (相手の県を中立に)</button>
-            <button class="act-btn" onclick="play('z')">📢 比例代表演説 (比例票UP)</button>
-            <div id="log" style="height:100px; overflow-y:auto; background:#000; padding:10px; font-size:0.8rem; color:#4ade80; margin-top:10px;"></div>
-            <div id="hireiResult" style="margin-top:10px; font-size:0.9rem;"></div>
-        </div>
+  <div class="grid">
+    <div class="map" id="map"></div>
+
+    <div>
+      <div id="turn" class="turn"></div>
+      <button class="btn" onclick="act('speech')">🎤 街頭演説</button>
+      <button class="btn" onclick="act('sns')">📱 SNS戦略</button>
+      <button class="btn" onclick="act('debate')">📺 全国討論</button>
+      <button class="btn" onclick="act('base')">🏠 地盤固め</button>
+      <button class="btn" onclick="act('youth')">🧑‍🎓 若者政策</button>
+      <button class="btn" onclick="act('scandal')">🔥 スキャンダル</button>
+      <button class="btn" onclick="act('crisis')">🛡 危機対応</button>
+      <div id="log" class="log"></div>
     </div>
+  </div>
 </div>
 
 <script>
-const MAP_DATA = {
-    "北海道・東北": ["北海道", "青森", "岩手", "宮城", "秋田", "山形", "福島"],
-    "関東": ["茨城", "栃木", "群馬", "埼玉", "千葉", "東京", "神奈川"],
-    "中部": ["新潟", "富山", "石川", "福井", "山梨", "長野", "岐阜", "静岡", "愛知"],
-    "近畿": ["三重", "滋賀", "京都", "大阪", "兵庫", "奈良", "和歌山"],
-    "中国・四国": ["鳥取", "島根", "岡山", "広島", "山口", "徳島", "香川", "愛媛", "高知"],
-    "九州・沖縄": ["福岡", "佐賀", "長崎", "熊本", "大分", "宮崎", "鹿児島", "沖縄"]
+const MAP={
+"北海道・東北":["北海道","青森","岩手","宮城","秋田","山形","福島"],
+"関東":["茨城","栃木","群馬","埼玉","千葉","東京","神奈川"],
+"中部":["新潟","富山","石川","福井","山梨","長野","岐阜","静岡","愛知"],
+"近畿":["三重","滋賀","京都","大阪","兵庫","奈良","和歌山"],
+"中国・四国":["鳥取","島根","岡山","広島","山口","徳島","香川","愛媛","高知"],
+"九州・沖縄":["福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄"]
 };
-const SEATS = {"北海道":17,"青森":6,"岩手":6,"宮城":10,"秋田":5,"山形":6,"福島":9,"茨城":13,"栃木":10,"群馬":10,"埼玉":28,"千葉":22,"東京":30,"神奈川":26,"新潟":10,"富山":6,"石川":6,"福井":4,"山梨":4,"長野":10,"岐阜":10,"静岡":16,"愛知":15,"三重":8,"滋賀":4,"京都":12,"大阪":19,"兵庫":12,"奈良":6,"和歌山":5,"鳥取":4,"島根":4,"岡山":10,"広島":12,"山口":8,"徳島":6,"香川":6,"愛媛":8,"高知":4,"福岡":11,"佐賀":4,"長崎":8,"大分":6,"宮崎":6,"鹿児島":9,"沖縄":4};
-const CITIES = ["東京", "大阪", "神奈川", "愛知", "埼玉", "千葉", "福岡"];
+const SEATS=Object.fromEntries(Object.values(MAP).flat().map(p=>[p,8]));
+let st={},turn=1,p1,p2,h1=0,h2=0,guard={};
 
-let status = {}, turn = 1, p1N, p2N, h1 = 0, h2 = 0;
-
-function start() {
-    p1N = document.getElementById("p1").value;
-    p2N = document.getElementById("p2").value;
-    document.getElementById("setup").classList.remove("active");
-    document.getElementById("game").classList.add("active");
-    
-    const container = document.getElementById("mapMain");
-    for(const [reg, prefs] of Object.entries(MAP_DATA)) {
-        const div = document.createElement("div");
-        div.className = "region-block";
-        div.innerHTML = `<div class="region-title">${reg}</div><div class="pref-container" id="${reg}"></div>`;
-        container.appendChild(div);
-        prefs.forEach(p => {
-            status[p] = 0;
-            const span = document.createElement("div");
-            span.className = "p-chip"; span.id = "p-"+p;
-            span.innerHTML = `${p} <small>${SEATS[p]}</small>`;
-            document.getElementById(reg).appendChild(span);
-        });
-    }
-    update();
+function start(){
+ p1=p1.value||"与党";p2=p2.value||"野党";
+ setup.classList.remove("active");game.classList.add("active");
+ for(const [r,ps] of Object.entries(MAP)){
+  const d=document.createElement("div");d.className="region";
+  d.innerHTML=`<div class="r-title">${r}</div><div class="prefs" id="${r}"></div>`;
+  map.appendChild(d);
+  ps.forEach(p=>{
+    st[p]=0;guard[p]=0;
+    const s=document.createElement("div");
+    s.className="pref";s.id=p;s.textContent=p;
+    document.getElementById(r).appendChild(s);
+  });
+ }
+ upd();
 }
 
-function play(type) {
-    const isP1 = turn % 2 !== 0;
-    const me = isP1 ? 1 : 2;
-    const opp = isP1 ? 2 : 1;
-    let logMsg = "";
-
-    if(type === 's') {
-        const list = Object.keys(status).filter(p => status[p] === 0);
-        if(list.length) { const p = list[0]; status[p] = me; logMsg = `${p}を獲得！`; }
-    } else if(type === 'v') {
-        const list = CITIES.filter(p => status[p] === opp);
-        if(list.length) { status[list[0]] = me; logMsg = `都市部 ${list[0]} を奪取！`; }
-    } else if(type === 'h') {
-        if(me === 1) h1 += 15; else h2 += 15;
-        logMsg = `全国放送で比例支持UP！`;
-    } else if(type === 'x') {
-        const list = Object.keys(status).filter(p => status[p] === opp);
-        if(list.length) { status[list[0]] = 0; logMsg = `スキャンダルで ${list[0]} が空白に！`; }
-    } else {
-        if(me === 1) h1 += 8; else h2 += 8;
-        logMsg = `着実に比例票を積み上げ。`;
-    }
-
-    addLog((isP1 ? p1N : p2N) + ": " + logMsg);
-    turn++;
-    update();
-    if(turn > 30) finish();
+function act(t){
+ const me=turn%2?1:2,op=me===1?2:1;
+ if(t==="speech"){
+  const n=Object.keys(st).find(p=>st[p]===0);
+  if(n)st[n]=me;
+ }
+ if(t==="sns"){
+  ["東京","大阪","愛知"].forEach(c=>{if(st[c]===op)st[c]=me});
+ }
+ if(t==="debate"){ me===1?h2=Math.max(0,h2-10):h1=Math.max(0,h1-10); }
+ if(t==="base"){
+  Object.keys(st).forEach(p=>{if(st[p]===me)guard[p]=2});
+ }
+ if(t==="youth"){ me===1?h1+=12:h2+=12; }
+ if(t==="scandal"){
+  const t=Object.keys(st).find(p=>st[p]===op&&guard[p]===0);
+  if(t)st[t]=0;
+ }
+ if(t==="crisis"){ Object.keys(guard).forEach(p=>guard[p]=0); }
+ log((me===1?p1:p2)+"が行動");
+ turn++;upd();
 }
 
-function update() {
-    let s1 = 0, s2 = 0;
-    Object.keys(status).forEach(p => {
-        const el = document.getElementById("p-"+p);
-        el.className = "p-chip " + (status[p] === 1 ? "p1" : (status[p] === 2 ? "p2" : ""));
-        if(status[p] === 1) s1 += SEATS[p];
-        if(status[p] === 2) s2 += SEATS[p];
-    });
-    
-    document.getElementById("bar1").style.width = (s1 / 465 * 100) + "%";
-    document.getElementById("bar2").style.width = (s2 / 465 * 100) + "%";
-    
-    const isP1 = turn % 2 !== 0;
-    const tBox = document.getElementById("turnDisplay");
-    tBox.textContent = isP1 ? p1N + " の番" : p2N + " の番";
-    tBox.style.background = isP1 ? "var(--p1)" : "var(--p2)";
-    tBox.style.color = isP1 ? "#000" : "#fff";
-    
-    document.getElementById("hireiResult").innerHTML = `比例支持: ${p1N} ${h1}pt / ${p2N} ${h2}pt`;
+function upd(){
+ let s1=0,s2=0;
+ Object.keys(st).forEach(p=>{
+  document.getElementById(p).className="pref "+(st[p]===1?"p1":st[p]===2?"p2":"");
+  if(st[p]===1)s1+=SEATS[p];if(st[p]===2)s2+=SEATS[p];
+ });
+ s1+=Math.floor(h1/2);s2+=Math.floor(h2/2);
+ bar1.style.width=(s1/465*100)+"%";
+ bar2.style.width=(s2/465*100)+"%";
+ turnBox();
 }
-
-function finish() {
-    let s1 = 0, s2 = 0;
-    Object.keys(status).forEach(p => { if(status[p]===1) s1+=SEATS[p]; if(status[p]===2) s2+=SEATS[p]; });
-    s1 += Math.floor(h1/2); s2 += Math.floor(h2/2);
-    alert(`試合終了！\n${p1N}: ${s1}議席\n${p2N}: ${s2}議席\n勝者: ${s1>s2?p1N:p2N}`);
-    location.reload();
+function turnBox(){
+ const t=turn%2? p1+"の番":p2+"の番";
+ turnDiv.textContent=t;
+ turnDiv.style.background=turn%2?"var(--p1)":"var(--p2)";
 }
-
-function addLog(m) {
-    const l = document.getElementById("log");
-    l.innerHTML = `<div>> ${m}</div>` + l.innerHTML;
-}
+function log(m){logDiv.innerHTML=`<div>> ${m}</div>`+logDiv.innerHTML}
 </script>
 </body>
 </html>
