@@ -3,89 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>衆院選2026：完全版</title>
+    <title>衆院選2026：日本制覇シミュレーター</title>
     <style>
         :root { --bg: #020617; --card: #1e293b; --acc: #facc15; --you: #22c55e; --ai: #ef4444; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: #f8fafc; }
-        .screen { display: none; padding: 20px; }
+        body { margin: 0; font-family: "Hiragino Sans", sans-serif; background: var(--bg); color: #f8fafc; overflow-x: hidden; }
+        .screen { display: none; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         .screen.active { display: block; }
-        .setup-card { max-width: 500px; margin: 40px auto; background: var(--card); padding: 30px; border-radius: 20px; text-align: center; }
-        input { width: 90%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; background: #0f172a; color: white; }
-        .map-box { width: 100%; height: 500px; background: #000; position: relative; border-radius: 15px; overflow: auto; border: 1px solid #334155; }
-        .map-inner { position: relative; width: 1000px; height: 800px; }
-        .pref { position: absolute; width: 70px; height: 45px; border-radius: 6px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+        .setup-box { max-width: 500px; margin: 40px auto; background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid #334155; text-align: center; }
+        input[type="text"] { width: 90%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; background: #0f172a; color: white; font-size: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; text-align: left; }
+        .btn-start { width: 100%; padding: 15px; background: var(--you); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        .game-layout { display: flex; gap: 20px; flex-wrap: wrap; height: 85vh; }
+        .map-box { flex: 1; min-width: 600px; background: #000; position: relative; border-radius: 15px; border: 1px solid #334155; overflow: auto; }
+        .map-inner { position: relative; width: 1000px; height: 850px; }
+        .pref { position: absolute; width: 75px; height: 45px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
         .neutral { background: #334155; color: #94a3b8; }
-        .you { background: var(--you); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--you); }
-        .ai { background: var(--ai); color: #fff; font-weight: bold; box-shadow: 0 0 10px var(--ai); }
-        .btn-start { width: 100%; padding: 15px; background: var(--you); color: white; border: none; border-radius: 10px; cursor: pointer; }
+        .you { background: var(--you); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--you); z-index: 5; }
+        .ai { background: var(--ai); color: #fff; font-weight: bold; box-shadow: 0 0 10px var(--ai); z-index: 5; }
+        .side { width: 320px; display: flex; flex-direction: column; gap: 10px; }
+        .log { background: #000; border: 1px solid #334155; padding: 10px; height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; color: #4ade80; }
+        .seats { background: var(--card); padding: 15px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="setup" class="screen active">
-    <div class="setup-card">
-        <h1>衆院選2026：出馬登録</h1>
+    <div class="setup-box">
+        <h1 style="color:var(--acc)">衆院選2026：出馬登録</h1>
+        <p>政党名を入力してください</p>
         <input type="text" id="pName" value="あなた党">
-        <button class="btn-start" onclick="initGame()">選挙戦をスタートする！</button>
+        <p>重要公約（5つ選択）</p>
+        <div class="grid">
+            <label><input type="checkbox" checked> 経済再生</label>
+            <label><input type="checkbox" checked> 社会保障</label>
+            <label><input type="checkbox" checked> 教育無償化</label>
+            <label><input type="checkbox" checked> 防衛強化</label>
+            <label><input type="checkbox" checked> 政治改革</label>
+            <label><input type="checkbox"> 地方創生</label>
+            <label><input type="checkbox"> 消費税減税</label>
+            <label><input type="checkbox"> 脱炭素</label>
+        </div>
+        <button class="btn-start" onclick="initGame()">選挙戦をスタート！</button>
     </div>
 </div>
 
-<div id="main" class="screen">
-    <h2 id="dispParty"></h2>
-    <div style="display:flex; gap:20px;">
+<div id="game" class="screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h2 id="dispName"></h2>
+        <div id="dispDay" style="color:var(--acc); font-weight:bold;"></div>
+    </div>
+    <div class="game-layout">
         <div class="map-box"><div id="map" class="map-inner"></div></div>
-        <div style="width:300px;">
-            <div id="tInd" style="background:var(--acc); color:#000; padding:10px; margin-bottom:10px; border-radius:8px; text-align:center; font-weight:bold;">あなたの番</div>
-            <button onclick="auto('u')" style="width:100%; padding:10px; margin-bottom:5px;">SNS戦略</button>
-            <button onclick="auto('r')" style="width:100%; padding:10px; margin-bottom:5px;">地方行脚</button>
-            <div id="log" style="background:#000; height:150px; overflow-y:auto; padding:10px; font-size:0.8rem; color:#4ade80;"></div>
-            <div id="seats" style="margin-top:10px; font-weight:bold;"></div>
+        <div class="side">
+            <div id="tInd" style="background:var(--acc); color:#000; padding:10px; text-align:center; font-weight:bold; border-radius:8px;">あなたの番</div>
+            <button onclick="setMode('sp')" style="width:100%; padding:10px; margin:2px 0; cursor:pointer;">🎤 街頭演説 (県を直接選ぶ)</button>
+            <button onclick="auto('u')" style="width:100%; padding:10px; margin:2px 0; cursor:pointer;">📱 SNS戦略 (都市部を獲得)</button>
+            <button onclick="auto('r')" style="width:100%; padding:10px; margin:2px 0; cursor:pointer;">🏠 戸別訪問 (地方を獲得)</button>
+            <div id="log" class="log"><div>> 選挙戦が始まりました。</div></div>
+            <div id="seats" class="seats"></div>
         </div>
     </div>
 </div>
 
 <script>
-const PREFS = { "北海道":{x:750,y:20,s:17,t:"r"}, "東京":{x:650,y:450,s:30,t:"u"}, "大阪":{x:250,y:400,s:19,t:"u"}, "福岡":{x:100,y:150,s:11,t:"u"} }; // デバッグ用に一部のみ
-let status = {}, turns = 45, isPlayer = true;
+const DATA = {
+    "北海道":{x:750,y:20,s:17,t:"r"}, "青森":{x:750,y:120,s:6,t:"r"}, "岩手":{x:840,y:160,s:6,t:"r"}, "秋田":{x:660,y:160,s:5,t:"r"},
+    "宮城":{x:820,y:240,s:10,t:"r"}, "山形":{x:680,y:240,s:6,t:"r"}, "福島":{x:750,y:310,s:9,t:"r"}, "新潟":{x:570,y:210,s:10,t:"r"},
+    "茨城":{x:780,y:420,s:13,t:"r"}, "栃木":{x:680,y:380,s:10,t:"r"}, "群馬":{x:590,y:330,s:10,t:"r"}, "埼玉":{x:590,y:440,s:28,t:"u"},
+    "千葉":{x:790,y:530,s:22,t:"u"}, "東京":{x:680,y:520,s:30,t:"u"}, "神奈川":{x:570,y:570,s:26,t:"u"}, "山梨":{x:490,y:420,s:4,t:"r"},
+    "長野":{x:500,y:310,s:10,t:"r"}, "岐阜":{x:400,y:370,s:10,t:"r"}, "静岡":{x:470,y:530,s:16,t:"u"}, "愛知":{x:390,y:470,s:15,t:"u"},
+    "富山":{x:480,y:210,s:6,t:"r"}, "石川":{x:390,y:210,s:6,t:"r"}, "福井":{x:320,y:270,s:4,t:"r"}, "滋賀":{x:310,y:350,s:4,t:"r"},
+    "三重":{x:330,y:580,s:8,t:"r"}, "奈良":{x:270,y:510,s:6,t:"r"}, "和歌山":{x:220,y:630,s:5,t:"r"}, "京都":{x:250,y:370,s:12,t:"u"},
+    "大阪":{x:180,y:460,s:19,t:"u"}, "兵庫":{x:160,y:360,s:12,t:"u"}, "鳥取":{x:100,y:290,s:4,t:"r"}, "島根":{x:10,y:290,s:4,t:"r"},
+    "岡山":{x:100,y:370,s:10,t:"r"}, "広島":{x:10,y:370,s:12,t:"r"}, "山口":{x:10,y:470,s:8,t:"r"}, "香川":{x:80,y:540,s:6,t:"r"},
+    "徳島":{x:150,y:580,s:6,t:"r"}, "愛媛":{x:10,y:580,s:8,t:"r"}, "高知":{x:80,y:640,s:4,t:"r"}, "福岡":{x:100,y:150,s:11,t:"u"},
+    "佐賀":{x:10,y:140,s:4,t:"r"}, "長崎":{x:10,y:210,s:8,t:"r"}, "熊本":{x:100,y:250,s:8,t:"r"}, "大分":{x:190,y:210,s:6,t:"r"},
+    "宮崎":{x:190,y:120,s:6,t:"r"}, "鹿児島":{x:100,y:50,s:9,t:"r"}, "沖縄":{x:10,y:40,s:4,t:"r"}
+};
+
+let status = {}, turns = 45, day = 1, isPlayer = true, mode = null;
 
 function initGame() {
     document.getElementById("setup").classList.remove("active");
-    document.getElementById("main").classList.add("active");
-    document.getElementById("dispParty").textContent = document.getElementById("pName").value + " 本部";
+    document.getElementById("game").classList.add("active");
+    document.getElementById("dispName").textContent = document.getElementById("pName").value + " 本部";
     const map = document.getElementById("map");
-    Object.keys(PREFS).forEach(name => {
+    Object.keys(DATA).forEach(name => {
         status[name] = "neutral";
         const d = document.createElement("div");
         d.className = "pref neutral"; d.id = name;
-        d.style.left = PREFS[name].x + "px"; d.style.top = PREFS[name].y + "px";
-        d.innerHTML = `<span>${name}</span>`;
+        d.style.left = DATA[name].x + "px"; d.style.top = DATA[name].y + "px";
+        d.innerHTML = `<span>${name}</span><b>${DATA[name].s}</b>`;
+        d.onclick = () => { if(mode==='sp'){ status[name]='you'; addLog(`${name}で演説。`); next(); } };
         map.appendChild(d);
     });
     render();
 }
 
+function setMode(m) { if(!isPlayer) return; mode = m; addLog("地図から県を選択してください。"); }
 function auto(t) {
     if(!isPlayer) return;
-    const pool = Object.keys(status).filter(p => status[p] !== 'you');
-    if(pool.length) status[pool[0]] = 'you';
-    isPlayer = false;
+    const pool = Object.keys(status).filter(p => DATA[p].t === t && status[p] !== 'you');
+    if(pool.length) { const p = pool[Math.floor(Math.random()*pool.length)]; status[p] = 'you'; addLog(`${p}の支持を拡大。`); }
+    next();
+}
+
+function next() {
+    isPlayer = false; mode = null; turns--; render();
+    document.getElementById("tInd").textContent = "相手が活動中...";
+    document.getElementById("tInd").style.background = "#ef4444";
+    setTimeout(ai, 600);
+}
+
+function ai() {
+    const targets = Object.keys(status).filter(p => status[p] !== 'ai');
+    const p = targets[Math.floor(Math.random()*targets.length)];
+    status[p] = 'ai'; addLog(`【警告】相手が ${p} を奪取！`);
+    if(Math.random() < 0.1) {
+        const my = Object.keys(status).filter(p => status[p] === 'you');
+        if(my.length){ const bad = my[Math.floor(Math.random()*my.length)]; status[bad] = 'ai'; addLog(`【不祥事】${bad} の支持が低下！`, true); }
+    }
+    if(turns % 3 === 0) day++;
+    isPlayer = true;
+    document.getElementById("tInd").textContent = "あなたの番";
+    document.getElementById("tInd").style.background = "#facc15";
     render();
-    setTimeout(() => { 
-        const targets = Object.keys(status).filter(p => status[p] !== 'ai');
-        if(targets.length) status[targets[targets.length-1]] = 'ai';
-        isPlayer = true;
-        render();
-    }, 1000);
 }
 
 function render() {
     let y=0, a=0;
     Object.keys(status).forEach(p => {
         document.getElementById(p).className = `pref ${status[p]}`;
-        if(status[p]==='you') y += PREFS[p].s;
-        if(status[p]==='ai') a += PREFS[p].s;
+        if(status[p]==='you') y += DATA[p].s;
+        if(status[p]==='ai') a += DATA[p].s;
     });
-    document.getElementById("seats").innerHTML = `あなた: ${y} / 相手: ${a}`;
+    document.getElementById("seats").innerHTML = `獲得議席<br>あなた: ${y}<br>相手党: ${a}`;
+    document.getElementById("dispDay").textContent = `${day}日目 / 残り${turns}回`;
+    if(turns <= 0) { alert(`終了！獲得議席：${y}`); location.reload(); }
+}
+
+function addLog(m, hot = false) {
+    const l = document.getElementById("log");
+    const d = document.createElement("div");
+    if(hot) d.style.color = "#ff4444";
+    d.textContent = "> " + m;
+    l.prepend(d);
 }
 </script>
 </body>
