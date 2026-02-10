@@ -10,17 +10,14 @@ body{
   background:#020617;
   color:#f8fafc;
 }
-h1,h2,h3{margin-top:0}
 button{
   padding:10px 14px;
-  margin:4px 0;
   border:none;
   border-radius:8px;
   background:#facc15;
   font-weight:bold;
   cursor:pointer;
 }
-button:disabled{opacity:.5;cursor:not-allowed}
 input{padding:8px;width:100%}
 
 .screen{display:none;padding:30px}
@@ -38,8 +35,8 @@ input{padding:8px;width:100%}
 /* 地図 */
 .map{
   position:relative;
-  width:900px;
-  height:550px;
+  width:1100px;
+  height:650px;
   background:#020617;
 }
 .pref{
@@ -49,7 +46,7 @@ input{padding:8px;width:100%}
   border-radius:8px;
   border:2px solid #fff;
   text-align:center;
-  font-size:.8rem;
+  font-size:.75rem;
   line-height:40px;
   cursor:pointer;
 }
@@ -57,7 +54,6 @@ input{padding:8px;width:100%}
 .you{background:#f59e0b;color:#000}
 .ai{background:#2563eb}
 
-/* 右パネル */
 .side{width:320px}
 .news{font-size:.85rem}
 .bar{
@@ -74,7 +70,7 @@ input{padding:8px;width:100%}
 </head>
 <body>
 
-<!-- 準備画面 -->
+<!-- 準備画面（ここだけ） -->
 <div id="setup" class="screen active">
   <h1>衆院選シミュレーター2026</h1>
 
@@ -85,22 +81,20 @@ input{padding:8px;width:100%}
 
   <div class="card">
     <p>公約を5つ選んでください</p>
-    <div>
-      <label><input type="checkbox" value="社会保障"> 社会保障</label><br>
-      <label><input type="checkbox" value="経済成長"> 経済成長</label><br>
-      <label><input type="checkbox" value="教育"> 教育</label><br>
-      <label><input type="checkbox" value="防衛"> 防衛</label><br>
-      <label><input type="checkbox" value="エネルギー"> エネルギー</label><br>
-      <label><input type="checkbox" value="農業"> 農業</label><br>
-      <label><input type="checkbox" value="政治とカネ"> 政治とカネ</label><br>
-      <label><input type="checkbox" value="外国人政策"> 外国人政策</label>
-    </div>
+    <label><input type="checkbox"> 社会保障</label><br>
+    <label><input type="checkbox"> 経済成長</label><br>
+    <label><input type="checkbox"> 教育</label><br>
+    <label><input type="checkbox"> 防衛</label><br>
+    <label><input type="checkbox"> エネルギー</label><br>
+    <label><input type="checkbox"> 農業</label><br>
+    <label><input type="checkbox"> 政治とカネ</label><br>
+    <label><input type="checkbox"> 外国人政策</label>
   </div>
 
   <button onclick="startGame()">ゲーム開始</button>
 </div>
 
-<!-- ゲーム画面 -->
+<!-- ゲーム画面（開始後のみ） -->
 <div id="game" class="screen">
   <h2 id="title"></h2>
 
@@ -109,13 +103,9 @@ input{padding:8px;width:100%}
 
     <div class="side">
       <h3>行動</h3>
-      <button onclick="action('speech')">街頭演説</button>
-      <button onclick="action('sns')">SNS戦略</button>
-      <button onclick="action('home')">戸別訪問</button>
-      <button onclick="action('tv')">テレビ出演</button>
-      <button onclick="action('flyer')">政策ビラ</button>
+      <button onclick="action()">行動する</button>
 
-      <h3>情勢</h3>
+      <h3>支持率</h3>
       <div class="bar"><div id="trendBar" class="bar-inner"></div></div>
 
       <h3>ニュース</h3>
@@ -128,109 +118,66 @@ input{padding:8px;width:100%}
 </div>
 
 <script>
-/* ===== データ ===== */
 const TOTAL_SEATS = 465;
-const DISTRICT_SEATS = 289;
-const PR_SEATS = 176;
 
+/* 47都道府県（簡略配置） */
 const PREFS = [
-  {name:"北海道",x:120,y:40,seats:17},
-  {name:"東京",x:430,y:230,seats:30},
-  {name:"神奈川",x:430,y:280,seats:26},
-  {name:"埼玉",x:380,y:230,seats:28},
-  {name:"千葉",x:480,y:250,seats:22},
-  {name:"愛知",x:360,y:300,seats:15},
-  {name:"大阪",x:320,y:330,seats:19},
-  {name:"兵庫",x:270,y:330,seats:12},
-  {name:"京都",x:300,y:300,seats:12},
-  {name:"福岡",x:200,y:360,seats:11}
+"北海道","青森","岩手","宮城","秋田","山形","福島",
+"茨城","栃木","群馬","埼玉","千葉","東京","神奈川",
+"新潟","富山","石川","福井","山梨","長野",
+"岐阜","静岡","愛知","三重",
+"滋賀","京都","大阪","兵庫","奈良","和歌山",
+"鳥取","島根","岡山","広島","山口",
+"徳島","香川","愛媛","高知",
+"福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄"
 ];
 
-let status={},turn=30,support=50,partyName="";
+let status={},support=50,partyName="";
 
-/* ===== 開始 ===== */
 function startGame(){
-  const checks=[...document.querySelectorAll("input:checked")];
-  if(checks.length!==5){alert("公約は5つ選んでください");return;}
   partyName=document.getElementById("partyName").value||"あなた党";
-
   document.getElementById("setup").classList.remove("active");
   document.getElementById("game").classList.add("active");
   document.getElementById("title").textContent=partyName+" 選挙戦";
-
   drawMap();
   update();
 }
 
-/* ===== 地図 ===== */
 function drawMap(){
   const map=document.getElementById("map");
   map.innerHTML="";
-  PREFS.forEach(p=>{
-    status[p.name]="neutral";
+  PREFS.forEach((p,i)=>{
+    status[p]="neutral";
     const d=document.createElement("div");
     d.className="pref neutral";
-    d.textContent=p.name;
-    d.style.left=p.x+"px";
-    d.style.top=p.y+"px";
-    d.onclick=()=>capture(p.name);
+    d.textContent=p;
+    d.style.left=(i%10)*100+"px";
+    d.style.top=Math.floor(i/10)*60+"px";
+    d.onclick=()=>{status[p]="you";update()};
     map.appendChild(d);
   });
 }
 
-/* ===== 行動 ===== */
-function action(type){
-  turn--;
-  support+=Math.floor(Math.random()*5);
-  log(type+" を実施");
-
-  if(Math.random()<0.15){
-    support-=10;
-    log("不祥事が発覚し支持率低下！");
-  }
-
-  if(turn<=5){
-    log("【終盤情勢】支持率が激しく動いています");
-  }
-
-  aiTurn();
+function action(){
+  support+=Math.floor(Math.random()*5)-2;
+  log("選挙活動を実施");
   update();
 }
 
-/* ===== 選挙 ===== */
-function capture(p){
-  status[p]="you";
-}
-function aiTurn(){
-  const free=Object.keys(status).filter(p=>status[p]==="neutral");
-  if(free.length){
-    const p=free[Math.floor(Math.random()*free.length)];
-    status[p]="ai";
-  }
-}
-
-/* ===== 集計 ===== */
 function update(){
-  let you=0,ai=0;
-  PREFS.forEach(p=>{
-    if(status[p.name]==="you") you+=p.seats;
-    if(status[p.name]==="ai") ai+=p.seats;
-  });
-
-  const prYou=Math.round(PR_SEATS*(support/100));
-  const prAi=PR_SEATS-prYou;
-
-  you=Math.min(TOTAL_SEATS,you+prYou);
-  ai=Math.min(TOTAL_SEATS-you,ai+prAi);
-
+  const you=Math.round(TOTAL_SEATS*(support/100));
+  const ai=TOTAL_SEATS-you;
   document.getElementById("seats").textContent=
     `${partyName}: ${you} / 相手党: ${ai}`;
-
   document.getElementById("trendBar").style.width=
     Math.max(0,Math.min(100,support))+"%";
+
+  Object.keys(status).forEach(p=>{
+    const el=[...document.querySelectorAll(".pref")].find(e=>e.textContent===p);
+    el.className="pref "+status[p];
+  });
 }
 
-/* ===== ニュース ===== */
 function log(msg){
   const n=document.getElementById("news");
   n.innerHTML="<div>"+msg+"</div>"+n.innerHTML;
