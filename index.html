@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>衆院選2026 改良版</title>
+<title>衆院選2026 完全リアル版</title>
 <style>
 :root{
 --bg:#020617;--card:#1e293b;
@@ -23,7 +23,6 @@ button.act:hover{background:#475569}
 
 .game{display:grid;grid-template-columns:1fr 300px;gap:15px}
 
-/* グリッド表示 */
 #map{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
@@ -94,18 +93,22 @@ cursor:pointer
 </div>
 
 <script>
-const PREFS=["北海道","青森","岩手","宮城","秋田","山形","福島",
-"茨城","栃木","群馬","埼玉","千葉","東京","神奈川",
-"新潟","富山","石川","福井","山梨","長野","岐阜","静岡","愛知",
-"三重","滋賀","京都","大阪","兵庫","奈良","和歌山",
-"鳥取","島根","岡山","広島","山口","徳島","香川","愛媛","高知",
-"福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄"];
-
 const TOTAL=465;
 const PR=176;
 const SMD=289;
 const DAYS=15;
 const PHASES=["朝","昼","夜"];
+
+const SEATS={
+"北海道":12,"青森":3,"岩手":3,"宮城":6,"秋田":3,"山形":3,"福島":5,
+"茨城":7,"栃木":4,"群馬":4,"埼玉":15,"千葉":13,"東京":30,"神奈川":18,
+"新潟":6,"富山":3,"石川":3,"福井":2,"山梨":2,"長野":5,"岐阜":5,"静岡":8,"愛知":15,
+"三重":4,"滋賀":4,"京都":6,"大阪":19,"兵庫":12,"奈良":3,"和歌山":2,
+"鳥取":2,"島根":2,"岡山":5,"広島":7,"山口":4,"徳島":2,"香川":3,"愛媛":4,"高知":2,
+"福岡":11,"佐賀":2,"長崎":4,"熊本":4,"大分":3,"宮崎":3,"鹿児島":4,"沖縄":4
+};
+
+const PREFS=Object.keys(SEATS);
 
 let data={},mode,current=1,turn=1;
 let p1,p2;
@@ -124,7 +127,7 @@ PREFS.forEach(p=>{
 data[p]={p1:50+Math.random()*10-5,p2:50+Math.random()*10-5};
 const d=document.createElement("div");
 d.className="pref";
-d.textContent=p;
+d.textContent=p+"("+SEATS[p]+")";
 d.onclick=()=>prefClick(p);
 map.appendChild(d);
 });
@@ -170,15 +173,29 @@ data[r].p2+=8;
 
 function calculate(){
 let smd1=0,smd2=0;
+
 PREFS.forEach(p=>{
-if(data[p].p1>data[p].p2)smd1++;
-else smd2++;
+if(data[p].p1>data[p].p2)
+   smd1+=SEATS[p];
+else
+   smd2+=SEATS[p];
 });
+
 let totalP1=0,totalP2=0;
-PREFS.forEach(p=>{totalP1+=data[p].p1;totalP2+=data[p].p2});
+PREFS.forEach(p=>{
+totalP1+=data[p].p1;
+totalP2+=data[p].p2;
+});
+
 let pr1=Math.round(PR*(totalP1/(totalP1+totalP2)));
 let pr2=PR-pr1;
-return{smd1,smd2,pr1,pr2,total1:smd1+pr1,total2:smd2+pr2};
+
+return{
+smd1,smd2,
+pr1,pr2,
+total1:smd1+pr1,
+total2:smd2+pr2
+};
 }
 
 function update(){
@@ -191,7 +208,7 @@ document.getElementById("turnInfo").textContent=
 day+"日目【"+phase+"】｜現在："+(current===1?p1:p2);
 
 document.querySelectorAll(".pref").forEach(e=>{
-let p=e.textContent;
+let p=e.textContent.split("(")[0];
 e.className="pref "+(data[p].p1>data[p].p2?"p1":"p2");
 });
 
@@ -203,7 +220,7 @@ document.getElementById("bar2").textContent=c.total2+" "+p2;
 document.getElementById("seatDetail").textContent=
 "小選挙区："+c.smd1+" / "+c.smd2+
 " ｜ 比例："+c.pr1+" / "+c.pr2+
-" ｜ 合計："+c.total1+" / "+c.total2;
+" ｜ 合計："+c.total1+" / "+c.total2+"（465）";
 }
 
 function finish(){
@@ -224,35 +241,30 @@ let prSeats=[];
 for(let i=0;i<final.pr1;i++)prSeats.push(1);
 for(let i=0;i<final.pr2;i++)prSeats.push(2);
 
+let allSeats=[...smdSeats,...prSeats];
+
 let c1=0,c2=0,i=0;
 
 let interval=setInterval(()=>{
-if(i<smdSeats.length){
-if(smdSeats[i]===1)c1++;else c2++;
+if(i<allSeats.length){
+if(allSeats[i]===1)c1++;else c2++;
 i++;
-updateBar(c1,c2,"小選挙区 開票中");
-}
-else if(i<smdSeats.length+prSeats.length){
-let j=i-smdSeats.length;
-if(prSeats[j]===1)c1++;else c2++;
-i++;
-updateBar(c1,c2,"比例代表 加算中");
-}
-else{
+updateBar(c1,c2);
+}else{
 clearInterval(interval);
 document.getElementById("winner").textContent=
 c1>c2?"🎉 "+p1+" 勝利！":"🎉 "+p2+" 勝利！";
 }
-},40);
+},35);
 }
 
-function updateBar(a,b,text){
+function updateBar(a,b){
 document.getElementById("rbar1").style.width=(a/TOTAL*100)+"%";
 document.getElementById("rbar2").style.width=(b/TOTAL*100)+"%";
 document.getElementById("rbar1").textContent=p1+" "+a;
 document.getElementById("rbar2").textContent=b+" "+p2;
 document.getElementById("countText").textContent=
-text+" ｜ "+(a+b)+" / "+TOTAL+" 議席";
+(a+b)+" / "+TOTAL+" 議席 開票";
 }
 </script>
 </body>
