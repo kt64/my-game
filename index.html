@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>衆院選2026 完全版A+B</title>
+<title>衆院選2026 改良版</title>
 <style>
 :root{
 --bg:#020617;--card:#1e293b;
@@ -16,19 +16,32 @@ button{padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:bol
 button.act{width:100%;margin:4px 0;background:#334155;color:#fff}
 button.act:hover{background:#475569}
 
-.meter{position:relative;height:40px;background:#111827;border-radius:20px;overflow:hidden;border:2px solid #fff;margin-bottom:15px;display:flex}
+.meter{position:relative;height:40px;background:#111827;border-radius:20px;overflow:hidden;border:2px solid #fff;margin-bottom:10px;display:flex}
 .bar-left{background:var(--p1);height:100%;display:flex;align-items:center;padding-left:10px;font-weight:bold}
 .bar-right{background:var(--p2);height:100%;margin-left:auto;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-weight:bold}
 .center-line{position:absolute;left:50%;top:0;width:3px;height:100%;background:#fff}
 
 .game{display:grid;grid-template-columns:1fr 300px;gap:15px}
-.region{margin-bottom:10px}
-.region-title{color:#facc15;font-size:.8rem;border-bottom:1px solid #334155}
-.pref-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.pref{padding:6px 8px;border-radius:6px;font-size:.7rem;background:#334155;cursor:pointer}
+
+/* グリッド表示 */
+#map{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+gap:6px;
+}
+.pref{
+padding:8px;
+border-radius:6px;
+font-size:.75rem;
+text-align:center;
+background:#334155;
+cursor:pointer
+}
 .pref.p1{background:var(--p1);color:#000;font-weight:bold}
 .pref.p2{background:var(--p2);font-weight:bold}
-.log{height:100px;overflow:auto;font-size:.8rem;background:#0f172a;padding:8px;border-radius:8px}
+
+.log{height:120px;overflow:auto;font-size:.8rem;background:#0f172a;padding:8px;border-radius:8px}
+.small{font-size:.8rem;color:#cbd5e1}
 </style>
 </head>
 <body>
@@ -47,13 +60,14 @@ button.act:hover{background:#475569}
 </div>
 
 <div id="game" class="screen">
-<div id="turnInfo"></div>
+<div id="turnInfo" style="font-weight:bold;margin-bottom:10px"></div>
 
 <div class="meter">
 <div id="bar1" class="bar-left"></div>
 <div id="bar2" class="bar-right"></div>
 <div class="center-line"></div>
 </div>
+<div id="seatDetail" class="small"></div>
 
 <div class="game">
 <div id="map"></div>
@@ -90,6 +104,8 @@ const PREFS=["北海道","青森","岩手","宮城","秋田","山形","福島",
 const TOTAL=465;
 const PR=176;
 const SMD=289;
+const DAYS=15;
+const PHASES=["朝","昼","夜"];
 
 let data={},mode,current=1,turn=1;
 let p1,p2;
@@ -105,7 +121,7 @@ document.getElementById("game").classList.add("active");
 
 const map=document.getElementById("map");
 PREFS.forEach(p=>{
-data[p]={p1:50+Math.random()*20-10,p2:50+Math.random()*20-10};
+data[p]={p1:50+Math.random()*10-5,p2:50+Math.random()*10-5};
 const d=document.createElement("div");
 d.className="pref";
 d.textContent=p;
@@ -115,35 +131,28 @@ map.appendChild(d);
 update();
 }
 
-function log(t){
-document.getElementById("log").innerHTML=t+"<br>"+document.getElementById("log").innerHTML;
-}
-
 function speechMode(){speech=true;}
 
 function prefClick(p){
 if(!speech)return;
 data[p]["p"+current]+=8;
-log(p+"で演説！");
 speech=false;
 next();
 }
 
 function action(type){
-if(type==="sns") globalEffect(3);
-if(type==="tv") globalEffect(5);
+if(type==="sns") globalEffect(2);
+if(type==="tv") globalEffect(4);
 if(type==="scandal") scandal();
 next();
 }
 
 function globalEffect(val){
 PREFS.forEach(p=>data[p]["p"+current]+=val);
-log("全国支持率上昇");
 }
 
 function scandal(){
-PREFS.forEach(p=>data[p]["p"+(current===1?2:1)]-=5);
-log("相手に打撃！");
+PREFS.forEach(p=>data[p]["p"+(current===1?2:1)]-=4);
 }
 
 function next(){
@@ -151,7 +160,7 @@ if(mode==="solo" && current===1){aiTurn();}
 current=current===1?2:1;
 turn++;
 update();
-if(turn>40) finish();
+if(turn>DAYS*3) finish();
 }
 
 function aiTurn(){
@@ -174,8 +183,12 @@ return{smd1,smd2,pr1,pr2,total1:smd1+pr1,total2:smd2+pr2};
 
 function update(){
 const c=calculate();
+
+let day=Math.ceil(turn/3);
+let phase=PHASES[(turn-1)%3];
+
 document.getElementById("turnInfo").textContent=
-"ターン："+turn+"｜現在："+(current===1?p1:p2);
+day+"日目【"+phase+"】｜現在："+(current===1?p1:p2);
 
 document.querySelectorAll(".pref").forEach(e=>{
 let p=e.textContent;
@@ -186,6 +199,11 @@ document.getElementById("bar1").style.width=(c.total1/TOTAL*100)+"%";
 document.getElementById("bar2").style.width=(c.total2/TOTAL*100)+"%";
 document.getElementById("bar1").textContent=p1+" "+c.total1;
 document.getElementById("bar2").textContent=c.total2+" "+p2;
+
+document.getElementById("seatDetail").textContent=
+"小選挙区："+c.smd1+" / "+c.smd2+
+" ｜ 比例："+c.pr1+" / "+c.pr2+
+" ｜ 合計："+c.total1+" / "+c.total2;
 }
 
 function finish(){
@@ -196,16 +214,31 @@ counting();
 
 function counting(){
 const final=calculate();
-let c1=0,c2=0;
-let seats=[...Array(final.total1).fill(1),...Array(final.total2).fill(2)];
-seats.sort(()=>Math.random()-0.5);
-let i=0;
+
+let smdSeats=[];
+for(let i=0;i<final.smd1;i++)smdSeats.push(1);
+for(let i=0;i<final.smd2;i++)smdSeats.push(2);
+smdSeats.sort(()=>Math.random()-0.5);
+
+let prSeats=[];
+for(let i=0;i<final.pr1;i++)prSeats.push(1);
+for(let i=0;i<final.pr2;i++)prSeats.push(2);
+
+let c1=0,c2=0,i=0;
+
 let interval=setInterval(()=>{
-if(i<seats.length){
-if(seats[i]===1)c1++;else c2++;
+if(i<smdSeats.length){
+if(smdSeats[i]===1)c1++;else c2++;
 i++;
-updateBar(c1,c2);
-}else{
+updateBar(c1,c2,"小選挙区 開票中");
+}
+else if(i<smdSeats.length+prSeats.length){
+let j=i-smdSeats.length;
+if(prSeats[j]===1)c1++;else c2++;
+i++;
+updateBar(c1,c2,"比例代表 加算中");
+}
+else{
 clearInterval(interval);
 document.getElementById("winner").textContent=
 c1>c2?"🎉 "+p1+" 勝利！":"🎉 "+p2+" 勝利！";
@@ -213,13 +246,13 @@ c1>c2?"🎉 "+p1+" 勝利！":"🎉 "+p2+" 勝利！";
 },40);
 }
 
-function updateBar(a,b){
+function updateBar(a,b,text){
 document.getElementById("rbar1").style.width=(a/TOTAL*100)+"%";
 document.getElementById("rbar2").style.width=(b/TOTAL*100)+"%";
 document.getElementById("rbar1").textContent=p1+" "+a;
 document.getElementById("rbar2").textContent=b+" "+p2;
 document.getElementById("countText").textContent=
-(a+b)+" / "+TOTAL+" 開票";
+text+" ｜ "+(a+b)+" / "+TOTAL+" 議席";
 }
 </script>
 </body>
