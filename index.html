@@ -23,13 +23,11 @@ margin-bottom:10px;display:flex
 }
 .bar-left{background:var(--p1);height:100%;display:flex;align-items:center;padding-left:10px;font-weight:bold}
 .bar-right{background:var(--p2);height:100%;margin-left:auto;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-weight:bold}
-.center-line{position:absolute;left:50%;top:0;width:3px;height:100%;background:#fff}
 .majority-line{
 position:absolute;
 left:50%;
 transform:translateX(-50%);
-width:3px;
-height:100%;
+width:3px;height:100%;
 background:#facc15;
 }
 
@@ -41,16 +39,11 @@ grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
 gap:6px;
 }
 .pref{
-padding:8px;
-border-radius:6px;
-font-size:.75rem;
-text-align:center;
-background:#374151;
-cursor:pointer
+padding:8px;border-radius:6px;font-size:.75rem;text-align:center;
+background:#374151;cursor:pointer
 }
 .pref.p1{background:var(--p1);color:#000;font-weight:bold}
 .pref.p2{background:var(--p2);font-weight:bold}
-
 .small{font-size:.8rem;color:#cbd5e1}
 </style>
 </head>
@@ -75,7 +68,7 @@ cursor:pointer
 <div class="meter">
 <div id="bar1" class="bar-left"></div>
 <div id="bar2" class="bar-right"></div>
-<div class="majority-line" style="left:50%"></div>
+<div class="majority-line"></div>
 </div>
 
 <div id="seatDetail" class="small"></div>
@@ -83,10 +76,10 @@ cursor:pointer
 <div class="game">
 <div id="map"></div>
 <div>
-<button class="act" onclick="speechMode()">🎤 演説</button>
-<button class="act" onclick="action('sns')">📱 SNS</button>
-<button class="act" onclick="action('tv')">📺 TV</button>
-<button class="act" onclick="action('scandal')">🔥 スキャンダル</button>
+<button class="act" onclick="speechMode()">🎤 地方演説（+6）</button>
+<button class="act" onclick="action('sns')">📱 SNS（40%に+2）</button>
+<button class="act" onclick="action('tv')">📺 TV討論（接戦区+4）</button>
+<button class="act" onclick="action('scandal')">🔥 ネガキャン（30%相手-3）</button>
 </div>
 </div>
 </div>
@@ -97,7 +90,6 @@ cursor:pointer
 <div id="rbar1" class="bar-left"></div>
 <div id="rbar2" class="bar-right"></div>
 </div>
-<div id="countText"></div>
 <div id="winner" style="font-size:24px;margin-top:20px"></div>
 <button onclick="location.reload()">もう一度</button>
 </div>
@@ -108,8 +100,7 @@ const MAJ=233;
 const DAYS=15;
 const PHASES=["朝","昼","夜"];
 
-/* 小選挙区 合計289固定 */
-const SEATS={
+const SEATS={/* 小選挙区289固定 */
 "北海道":12,"青森":3,"岩手":3,"宮城":6,"秋田":3,"山形":3,"福島":5,
 "茨城":7,"栃木":4,"群馬":4,"埼玉":15,"千葉":13,"東京":30,"神奈川":18,
 "新潟":6,"富山":3,"石川":3,"福井":2,"山梨":2,"長野":5,"岐阜":5,"静岡":8,"愛知":15,
@@ -118,10 +109,7 @@ const SEATS={
 "福岡":11,"佐賀":2,"長崎":4,"熊本":4,"大分":3,"宮崎":3,"鹿児島":4,"沖縄":4
 };
 
-const PREFS=Object.keys(SEATS);
-
-/* 比例ブロック 合計176固定 */
-const BLOCKS={
+const BLOCKS={/* 比例176固定 */
 "北海道":{seats:8,prefs:["北海道"]},
 "東北":{seats:14,prefs:["青森","岩手","宮城","秋田","山形","福島"]},
 "北関東":{seats:19,prefs:["茨城","栃木","群馬"]},
@@ -134,6 +122,8 @@ const BLOCKS={
 "四国":{seats:6,prefs:["徳島","香川","愛媛","高知"]},
 "九州":{seats:18,prefs:["福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄"]}
 };
+
+const PREFS=Object.keys(SEATS);
 
 let data={},mode,current=1,turn=1,p1,p2,speech=false;
 
@@ -161,28 +151,47 @@ function speechMode(){speech=true;}
 
 function prefClick(p){
 if(!speech)return;
-data[p]["p"+current]+=8;
+data[p]["p"+current]+=6;
+clamp(p);
 speech=false;
 next();
 }
 
 function action(type){
-if(type==="sns") globalEffect(2);
-if(type==="tv") globalEffect(4);
-if(type==="scandal") scandal();
+if(type==="sns"){
+PREFS.forEach(p=>{
+if(Math.random()<0.4){
+data[p]["p"+current]+=2;
+clamp(p);
+}
+});
+}
+if(type==="tv"){
+PREFS.forEach(p=>{
+if(Math.abs(data[p].p1-data[p].p2)<5){
+data[p]["p"+current]+=4;
+clamp(p);
+}
+});
+}
+if(type==="scandal"){
+PREFS.forEach(p=>{
+if(Math.random()<0.3){
+data[p]["p"+(current===1?2:1)]-=3;
+clamp(p);
+}
+});
+}
 next();
 }
 
-function globalEffect(val){
-PREFS.forEach(p=>data[p]["p"+current]+=val);
-}
-
-function scandal(){
-PREFS.forEach(p=>data[p]["p"+(current===1?2:1)]-=4);
+function clamp(p){
+data[p].p1=Math.max(0,Math.min(100,data[p].p1));
+data[p].p2=Math.max(0,Math.min(100,data[p].p2));
 }
 
 function next(){
-if(mode==="solo" && current===1){aiTurn();}
+if(mode==="solo"&&current===1){aiTurn();}
 current=current===1?2:1;
 turn++;
 update();
@@ -191,31 +200,41 @@ if(turn>DAYS*3) finish();
 
 function aiTurn(){
 let r=PREFS[Math.floor(Math.random()*PREFS.length)];
-data[r].p2+=8;
+data[r].p2+=6;
+clamp(r);
+}
+
+function dhondt(v1,v2,seats){
+let q=[];
+for(let i=1;i<=seats;i++){
+q.push({p:1,v:v1/i});
+q.push({p:2,v:v2/i});
+}
+q.sort((a,b)=>b.v-a.v);
+let p1=0,p2=0;
+for(let i=0;i<seats;i++){
+if(q[i].p===1)p1++;else p2++;
+}
+return{p1,p2};
 }
 
 function calculate(){
 let smd1=0,smd2=0;
-
 PREFS.forEach(p=>{
-if(data[p].p1>data[p].p2) smd1+=SEATS[p];
+if(data[p].p1>data[p].p2)smd1+=SEATS[p];
 else smd2+=SEATS[p];
 });
 
 let pr1=0,pr2=0;
-
-/* ブロック別比例 */
 for(const b in BLOCKS){
-let total1=0,total2=0;
+let v1=0,v2=0;
 BLOCKS[b].prefs.forEach(p=>{
-total1+=data[p].p1;
-total2+=data[p].p2;
+v1+=data[p].p1;
+v2+=data[p].p2;
 });
-let seats=BLOCKS[b].seats;
-let b1=Math.round(seats*(total1/(total1+total2)));
-let b2=seats-b1;
-pr1+=b1;
-pr2+=b2;
+let r=dhondt(v1,v2,BLOCKS[b].seats);
+pr1+=r.p1;
+pr2+=r.p2;
 }
 
 return{
@@ -227,20 +246,15 @@ total2:smd2+pr2
 
 function update(){
 const c=calculate();
-
 let day=Math.ceil(turn/3);
 let phase=PHASES[(turn-1)%3];
-
 document.getElementById("turnInfo").textContent=
 day+"日目【"+phase+"】｜現在："+(current===1?p1:p2);
 
 document.querySelectorAll(".pref").forEach(e=>{
 let p=e.textContent.split("(")[0];
-if(data[p].p1===50 && data[p].p2===50){
-e.className="pref";
-}else{
-e.className="pref "+(data[p].p1>data[p].p2?"p1":"p2");
-}
+if(data[p].p1===50&&data[p].p2===50)e.className="pref";
+else e.className="pref "+(data[p].p1>data[p].p2?"p1":"p2");
 });
 
 document.getElementById("bar1").style.width=(c.total1/TOTAL*100)+"%";
@@ -251,14 +265,23 @@ document.getElementById("bar2").textContent=c.total2+" "+p2;
 document.getElementById("seatDetail").textContent=
 "小選挙区："+c.smd1+" / "+c.smd2+
 " ｜ 比例："+c.pr1+" / "+c.pr2+
-" ｜ 合計："+c.total1+" / "+c.total2+" ｜ 過半数："+MAJ;
+" ｜ 合計："+c.total1+" / "+c.total2+
+" ｜ 過半数："+MAJ;
 }
 
 function finish(){
 document.getElementById("game").classList.remove("active");
 document.getElementById("result").classList.add("active");
+
+const c=calculate();
+document.getElementById("rbar1").style.width=(c.total1/TOTAL*100)+"%";
+document.getElementById("rbar2").style.width=(c.total2/TOTAL*100)+"%";
+document.getElementById("rbar1").textContent=p1+" "+c.total1;
+document.getElementById("rbar2").textContent=c.total2+" "+p2;
+
+document.getElementById("winner").textContent=
+c.total1>c.total2?p1+" 勝利！":p2+" 勝利！";
 }
 </script>
 </body>
 </html>
-
